@@ -49,6 +49,7 @@ fun ThemeSettingsScreen(
 
     val themePreviews = listOf(
         ThemePreviewItem(ThemePalette.POWER, Color(0xFFE85B37), Color(0xFF1E1F24), Color(0xFFF1F2F5)),
+        ThemePreviewItem(ThemePalette.LAVENDER, Color(0xFF7358F6), Color(0xFF8F53F6), Color(0xFFF3F4FD)),
         ThemePreviewItem(ThemePalette.LONGEVITY, Color(0xFFFF6B35), Color(0xFF4E89AE), Color(0xFF0F1218)),
         ThemePreviewItem(ThemePalette.WELLNESS, Color(0xFFFF6B35), Color(0xFF4F46E5), Color(0xFFF7F8FA)),
         ThemePreviewItem(ThemePalette.FIRE, Color(0xFFFF643D), Color(0xFFF59E0B), Color(0xFF0E0E12)),

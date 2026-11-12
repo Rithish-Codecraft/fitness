@@ -65,6 +65,7 @@ fun DashboardScreen(
                     Text(
                         text = if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LONGEVITY) "Your Fitness" 
                                else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.WELLNESS) "Good Morning"
+                               else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LAVENDER) "Hi, Welcome back."
                                else "PulseForge AI",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
@@ -73,6 +74,7 @@ fun DashboardScreen(
                     Text(
                         text = if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LONGEVITY) "Tina Lumia • Biometrics"
                                else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.WELLNESS) "Claire Rosinkranz • Diet Plan"
+                               else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LAVENDER) "Khyati Gajjar • Neo-Soft Lilac"
                                else "${profile.primaryGoal.label} • ${profile.locality.label}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -106,6 +108,42 @@ fun DashboardScreen(
 
         // Layout variant based on active theme
         when (profile.activeTheme) {
+            com.pulseforge.app.domain.model.ThemePalette.LAVENDER -> {
+                // DESIGNBYKHYATI NEO-SOFT LILAC SUITE (Soft Lavender & Royal Violet)
+                item {
+                    LavenderSearchBar()
+                }
+                item {
+                    LavenderHighlightUpdateRow()
+                }
+                item {
+                    LavenderGraphicUpdateCard()
+                }
+                item {
+                    LavenderWeekScheduleCard()
+                }
+                item {
+                    LavenderUserProfileCard(
+                        userName = "Khyati Gajjar",
+                        email = "khyati@fitness.com",
+                        phone = "+01 234 567 890",
+                        address = "Main Street North Park 123, Orchid Rd",
+                        onMessage = onNavigateToCoach
+                    )
+                }
+                item {
+                    LavenderDirectMessageCard()
+                }
+                item {
+                    LavenderUserReviewCard()
+                }
+                item {
+                    LavenderWelcomeLoginCard()
+                }
+                item {
+                    LavenderSideMenuCard()
+                }
+            }
             com.pulseforge.app.domain.model.ThemePalette.LONGEVITY -> {
                 // IMAGE 1: LONGEVITY CYBER / STEALTH LAYOUT
                 item {
@@ -372,6 +410,33 @@ fun DashboardScreen(
                         workoutKcal = 280,
                         title = "Todays activity"
                     )
+                }
+
+                // Reference: Arch Vault Trio (Calories, Time, Distance)
+                item {
+                    ArchVaultTrioCard(
+                        caloriesKcal = 456,
+                        timeMinutes = "2:05",
+                        distanceMiles = "3.25"
+                    )
+                }
+
+                // Reference: Strength PR & Move Workouts
+                item {
+                    StrengthPrSummaryCard(
+                        moveCompleted = 6,
+                        moveTotal = 6,
+                        strengthCompleted = 3,
+                        strengthTotal = 5,
+                        benchPressLbs = 130,
+                        benchGainLbs = 10,
+                        backSquatLbs = 180
+                    )
+                }
+
+                // Reference: Activity Timeline Summary
+                item {
+                    ActivityTimelineSummaryCard()
                 }
             }
         }

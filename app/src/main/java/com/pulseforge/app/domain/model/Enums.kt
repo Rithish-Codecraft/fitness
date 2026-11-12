@@ -60,6 +60,7 @@ enum class ExperienceLevel(val label: String) {
 
 enum class ThemePalette(val label: String, val subtitle: String) {
     POWER("Pulse Minimal", "Coral Terracotta & Soft Alabaster (Signature UI)"),
+    LAVENDER("Neo-Soft Lilac", "Soft Lavender & Vibrant Purple (DesignByKhyati UI System)"),
     LONGEVITY("Longevity Cyber", "Deep Obsidian & Biometrics (Mindfulness & Intensity Hacking)"),
     WELLNESS("Macro Tachometer", "Radiant Semicircle Gauge & Clean Wellness Day"),
     FIRE("MacroFactor Amber", "Obsidian & Warm Coral (MacroFactor-Style)"),

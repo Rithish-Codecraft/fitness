@@ -24,9 +24,7 @@ import com.pulseforge.app.domain.model.FoodItem
 import com.pulseforge.app.domain.model.MealType
 import com.pulseforge.app.domain.model.ShakeRecipe
 import com.pulseforge.app.presentation.MainUiState
-import com.pulseforge.app.presentation.components.MacroProgressBar
-import com.pulseforge.app.presentation.components.PulseCard
-import com.pulseforge.app.presentation.components.SectionHeader
+import com.pulseforge.app.presentation.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -221,6 +219,42 @@ fun NutritionScreen(
                     }
                 }
             }
+        }
+
+        // Reference: AI Food Scanner Result Sheet (from reference eZroVTc5rY.jpg)
+        item {
+            AiFoodScannerResultCard(
+                foodName = "Protein Oats with Mixed Berries",
+                portionText = "1 portion (300g)",
+                aiConfidencePct = 98,
+                caloriesKcal = 420,
+                proteinG = 32,
+                carbsG = 54,
+                fatG = 8,
+                healthScore = 9,
+                onSaveMeal = { type: MealType ->
+                    onAddManualFood(
+                        type,
+                        "Protein Oats with Mixed Berries",
+                        300.0,
+                        "g",
+                        420.0,
+                        32.0,
+                        54.0,
+                        8.0
+                    )
+                }
+            )
+        }
+
+        // Reference: Nutrition Facts Label OCR & Micronutrients (from reference 2HGQuXbdT7.jpg)
+        item {
+            NutritionLabelMicronutrientCard(
+                calories = 170,
+                proteinG = 6.0,
+                carbsG = 31.0,
+                fatG = 3.0
+            )
         }
 
         item { Spacer(modifier = Modifier.height(40.dp)) }

@@ -66,6 +66,10 @@ fun PulseForgeTheme(
             if (isDarkMode) PulseThemeColors.PowerDarkScheme to PulseThemeColors.PowerExtraDark
             else PulseThemeColors.PowerLightScheme to PulseThemeColors.PowerExtraLight
         }
+        ThemePalette.LAVENDER -> {
+            if (isDarkMode) PulseThemeColors.LavenderDarkScheme to PulseThemeColors.LavenderExtraDark
+            else PulseThemeColors.LavenderLightScheme to PulseThemeColors.LavenderExtraLight
+        }
         ThemePalette.LONGEVITY -> {
             PulseThemeColors.LongevityDarkScheme to PulseThemeColors.LongevityExtraDark
         }

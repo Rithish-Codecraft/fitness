@@ -164,6 +164,57 @@ object PulseThemeColors {
         floatingNavActiveText = Color(0xFFFFFFFF)
     )
 
+    // 4. NEO-SOFT LILAC / DESIGNBYKHYATI THEME (Soft Lavender & Vibrant Royal Purple)
+    val LavenderLightScheme = lightColorScheme(
+        primary = Color(0xFF7358F6),       // Vibrant Royal Purple
+        onPrimary = Color(0xFFFFFFFF),
+        secondary = Color(0xFF8F53F6),     // Electric Lavender Violet
+        onSecondary = Color(0xFFFFFFFF),
+        tertiary = Color(0xFFFFB86C),      // Warm Amber Highlight
+        background = Color(0xFFF3F4FD),    // Soft Lilac / Lavender Tinted Background
+        onBackground = Color(0xFF1E1F30),
+        surface = Color(0xFFFFFFFF),       // Pure White Floating Card
+        onSurface = Color(0xFF1E1F30),
+        surfaceVariant = Color(0xFFE8EBFA),// Very soft lilac tint for inputs and dividers
+        onSurfaceVariant = Color(0xFF7E849E)
+    )
+    val LavenderDarkScheme = darkColorScheme(
+        primary = Color(0xFF8F75FF),
+        onPrimary = Color(0xFF0F0B26),
+        secondary = Color(0xFFA47DF8),
+        onSecondary = Color(0xFF0F0B26),
+        background = Color(0xFF141324),
+        onBackground = Color(0xFFF3F4FD),
+        surface = Color(0xFF1E1C33),
+        onSurface = Color(0xFFF3F4FD),
+        surfaceVariant = Color(0xFF2B2848),
+        onSurfaceVariant = Color(0xFFA5A9C4)
+    )
+    val LavenderExtraLight = ExtraThemeColors(
+        accentGlow = Color(0xFF7358F6),
+        cardBackground = Color(0xFFFFFFFF),
+        cardBorder = Color(0xFFE5E7FA),
+        proteinColor = Color(0xFF7358F6),
+        carbsColor = Color(0xFFA78BFA),
+        fatColor = Color(0xFFFFB86C),
+        calorieRing = Color(0xFF7358F6),
+        floatingNavBackground = Color(0xFFFFFFFF),
+        floatingNavActivePill = Color(0xFF7358F6),
+        floatingNavActiveText = Color(0xFFFFFFFF)
+    )
+    val LavenderExtraDark = ExtraThemeColors(
+        accentGlow = Color(0xFF8F75FF),
+        cardBackground = Color(0xFF1E1C33),
+        cardBorder = Color(0xFF2F2C50),
+        proteinColor = Color(0xFF8F75FF),
+        carbsColor = Color(0xFFA78BFA),
+        fatColor = Color(0xFFFFB86C),
+        calorieRing = Color(0xFF8F75FF),
+        floatingNavBackground = Color(0xFF141324),
+        floatingNavActivePill = Color(0xFF8F75FF),
+        floatingNavActiveText = Color(0xFFFFFFFF)
+    )
+
     // 4. MACROFACTOR AMBER
     val FireDarkScheme = darkColorScheme(
         primary = Color(0xFFFF643D),

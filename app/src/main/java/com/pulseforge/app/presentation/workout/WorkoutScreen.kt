@@ -22,9 +22,7 @@ import com.pulseforge.app.core.theme.LocalExtraColors
 import com.pulseforge.app.domain.calculator.OneRepMaxCalculator
 import com.pulseforge.app.domain.model.*
 import com.pulseforge.app.presentation.MainUiState
-import com.pulseforge.app.presentation.components.MetricBadge
-import com.pulseforge.app.presentation.components.PulseCard
-import com.pulseforge.app.presentation.components.SectionHeader
+import com.pulseforge.app.presentation.components.*
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +68,26 @@ fun WorkoutScreen(
                     Text(if (isLoggingNewSession) "Cancel" else "New Workout")
                 }
             }
+        }
+
+        // Reference: Muscle Group Filter Bar (from reference KJ93mTngMB.jpg)
+        item {
+            MuscleGroupFilterBar()
+        }
+
+        // Reference: Elite Workout Set Table Card (from reference KJ93mTngMB.jpg)
+        item {
+            WorkoutSetTableCard(
+                exerciseName = "Incline Bench Press",
+                muscles = "Chest • Triceps • Shoulders",
+                sets = listOf(
+                    ExerciseSetRow(1, 40.0, 8, "Warmup"),
+                    ExerciseSetRow(2, 55.0, 8, "Normal"),
+                    ExerciseSetRow(3, 60.0, 4, "Heavy"),
+                    ExerciseSetRow(4, 50.0, 10, "Light")
+                ),
+                onAddSet = { isLoggingNewSession = true }
+            )
         }
 
         // Active Session Creation Card

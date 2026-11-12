@@ -1,10 +1,10 @@
 {
-  "versionCode": 5,
-  "versionName": "1.4.0",
+  "versionCode": 6,
+  "versionName": "1.5.0",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Added Mitchell Multi-Waveform Activity Graph (3 interwoven cubic spline liquid waveforms: Purple Walking, Green Running, Radiant Orange Workout)\n• Added Total Burned (810/970 kcal) & Comparison (+23% Than yesterday) hero metrics\n• Added horizontal multi-segmented ratio bar and 3-column activity breakdown (Walking, Running, Workout)\n• Added Motivational Lavender Banner ('Just a Little More to Go', 75%)\n• Added Quick Activity Launcher Bar ('Start new activity' with Run, Yoga, Swim, Walk, Gym)",
+  "releaseNotes": "• Complete End-to-End PulseForge Architecture & Categorized Ref Suites:\n• Neo-Soft Lilac Theme (DesignByKhyati): Interactive 7-day week schedule strip, Graphic Update cubic spline area chart with 100k peak callout & 4-metric statistics, Highlight Update story row, User Profile & Review cards, Capsule Search Bar, and Welcome Login card\n• Arch Vault Trio Suite (from ref): Blue Calories arch (456 kcal), Green Time arch (2:05 min), Mustard Distance arch (3.25 mi)\n• Elite Workout Set Table & Muscle Group Filter Bar (from ref): Set table (Set, Weight, Reps, Difficulty: Warmup/Normal/Heavy), double weight toggle, muscle group filters (Abs, Back, Biceps, Cardio, Chest, Legs, Shoulders, Triceps)\n• Nutrition Label OCR & Micronutrient Checklist (from ref): Macro dials + Saturated fat, Cholesterol, Sodium, Potassium, Fiber, Sugars checklist\n• AI Food Scanner Result Sheet (from ref): AI Confidence 98%, Health Quality score slider, meal category selector, portion confirmation\n• Activity Timeline Summary Card: 15-day comparison, Duration (17h 18m), Active Energy (4,979 kcal), Distance (99.14 km), Elevation Gain (200 m)\n• Strength PR & Move Workouts Summary: Move 6/6, Strength 3/5, Bench Press 130 lbs, Back Squat 180 lbs PRs",
   "isMandatory": false,
   "minSupportedVersion": 1,
-  "fileSizeBytes": 52835619,
+  "fileSizeBytes": 52917539,
   "sha256": ""
 }

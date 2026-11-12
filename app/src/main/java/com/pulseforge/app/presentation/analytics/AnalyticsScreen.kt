@@ -113,6 +113,16 @@ fun AnalyticsScreen(
             StartNewActivityCard()
         }
 
+        // Neo-Soft Lilac Graphic Update Spline Chart (100k Peak Callout, 4-Metric Statistics, Target Progress Bar)
+        item {
+            LavenderGraphicUpdateCard()
+        }
+
+        // Neo-Soft Lilac 7-Day Interactive Week Schedule Strip
+        item {
+            LavenderWeekScheduleCard()
+        }
+
         // Image 2 Hatched Weight Trend Cylinder Bar Chart
         item {
             WeightTrendHatchedCard(
