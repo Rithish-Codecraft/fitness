@@ -1,0 +1,10 @@
+{
+  "versionCode": 2,
+  "versionName": "1.1.0",
+  "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
+  "releaseNotes": "• New AI food recognition engine with enhanced accuracy\n• Added market-leading UI themes (Whoop, Hevy, MacroFactor, Apple Activity)\n• Faster muscle hypertrophy volume load analytics\n• On-device nutrition label OCR optimizations",
+  "isMandatory": false,
+  "minSupportedVersion": 1,
+  "fileSizeBytes": 52770083,
+  "sha256": ""
+}
