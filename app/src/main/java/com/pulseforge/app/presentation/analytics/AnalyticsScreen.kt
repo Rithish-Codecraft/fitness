@@ -87,6 +87,32 @@ fun AnalyticsScreen(
             )
         }
 
+        // Image 2 Hatched Weight Trend Cylinder Bar Chart
+        item {
+            WeightTrendHatchedCard(
+                currentWeightKg = uiState.userProfile.currentWeightKg
+            )
+        }
+
+        // Image 2 Continuous BMI Health Spectrum
+        item {
+            BmiSpectrumCard(
+                bmiValue = 25.8,
+                category = "Healthy"
+            )
+        }
+
+        // Image 1 Daily Walk Session Report & Breathwork Dial
+        item {
+            DailyWalkSessionReportCard(
+                morningWalk = "55 min 24 sec",
+                eveningWalk = "43 min 31 sec",
+                totalTime = "1h 38m 55s",
+                activityPct = 42,
+                successPct = 42
+            )
+        }
+
         // Lifetime / Selected Horizon Totals
         item {
             PulseCard {

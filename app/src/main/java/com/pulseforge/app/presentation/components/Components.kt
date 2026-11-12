@@ -1016,3 +1016,971 @@ fun MiniActivityChip(
         }
     }
 }
+
+/**
+ * Image 1: Longevity Cyber Progress Hero Card (60% Dual Arc + Start Now button)
+ */
+@Composable
+fun LongevityProgressHeroCard(
+    progressPct: Int = 60,
+    timeframe: String = "Last week",
+    onStartNow: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    PulseCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Progress",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = timeframe,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = onStartNow,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B35)),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
+                ) {
+                    Text("Start Now", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 12.sp)
+                }
+            }
+
+            // Dual concentric arc dial
+            Box(
+                modifier = Modifier.size(110.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val strokeWidth = 12.dp.toPx()
+                    val diameter = size.minDimension - strokeWidth
+                    val topLeft = Offset(strokeWidth / 2f, strokeWidth / 2f)
+                    val arcSize = Size(diameter, diameter)
+
+                    // Background track
+                    drawArc(
+                        color = Color(0xFF2B3445),
+                        startAngle = 0f,
+                        sweepAngle = 360f,
+                        useCenter = false,
+                        topLeft = topLeft,
+                        size = arcSize,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+
+                    // Secondary cyan arc
+                    drawArc(
+                        color = Color(0xFF4E89AE),
+                        startAngle = 180f,
+                        sweepAngle = 100f,
+                        useCenter = false,
+                        topLeft = topLeft,
+                        size = arcSize,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+
+                    // Primary longevity orange arc
+                    drawArc(
+                        color = Color(0xFFFF6B35),
+                        startAngle = -20f,
+                        sweepAngle = 216f,
+                        useCenter = false,
+                        topLeft = topLeft,
+                        size = arcSize,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+                }
+
+                Text(
+                    text = "$progressPct%",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Image 1: Tri-Metric Biometric Bar (Heart Rate 82/bpm, Calories 25/250, Steps 450/5500)
+ */
+@Composable
+fun BiometricTriMetricsCard(
+    heartRateBpm: Int = 82,
+    caloriesBurned: Int = 25,
+    caloriesTarget: Int = 250,
+    stepsCount: Int = 450,
+    stepsTarget: Int = 5500,
+    modifier: Modifier = Modifier
+) {
+    PulseCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Heart Rate
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color(0xFFFF5252)))
+                    Text("Heart Rate", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text("$heartRateBpm", fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                    Text("/bpm", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 2.dp, start = 2.dp))
+                }
+            }
+
+            Box(modifier = Modifier.width(1.dp).height(32.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+
+            // Calories
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color(0xFFFFB142)))
+                    Text("Calories", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text("$caloriesBurned", fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                    Text("/$caloriesTarget", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 2.dp, start = 2.dp))
+                }
+            }
+
+            Box(modifier = Modifier.width(1.dp).height(32.dp).background(MaterialTheme.colorScheme.surfaceVariant))
+
+            // Steps
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color(0xFF34ACE0)))
+                    Text("Steps", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text("$stepsCount", fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                    Text("/$stepsTarget", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 2.dp, start = 2.dp))
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Image 1: Blood Pressure Candle Indicator Card (120/80 mm Hg Normal + S S M T W T F)
+ */
+@Composable
+fun BloodPressureCandleCard(
+    systolic: Int = 120,
+    diastolic: Int = 80,
+    modifier: Modifier = Modifier
+) {
+    PulseCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Color(0xFFFF5252)))
+                    Text("Blood Pressure", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text("$systolic/$diastolic", fontSize = 20.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                    Text(" mm Hg", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 2.dp))
+                }
+                Text("Normal", fontSize = 11.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Medium)
+            }
+
+            // Weekly candle distribution
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                val days = listOf("S", "S", "M", "T", "W", "T", "F")
+                val heights = listOf(28.dp, 34.dp, 24.dp, 38.dp, 30.dp, 32.dp, 26.dp)
+
+                days.forEachIndexed { i, day ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .width(5.dp)
+                                .height(heights[i])
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(Color(0xFF4E89AE), Color(0xFFFF6B35))
+                                    )
+                                )
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(day, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Image 1: ECG Heart Rate Waveform Card (80.5 bmp Normal + live pulse line)
+ */
+@Composable
+fun EcgHeartRateCard(
+    bpm: Double = 80.5,
+    modifier: Modifier = Modifier
+) {
+    PulseCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // ECG pulse wave Canvas
+            Canvas(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(40.dp)
+            ) {
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    val w = size.width
+                    val h = size.height
+                    moveTo(0f, h * 0.5f)
+                    lineTo(w * 0.2f, h * 0.5f)
+                    lineTo(w * 0.25f, h * 0.3f)
+                    lineTo(w * 0.3f, h * 0.75f)
+                    lineTo(w * 0.35f, h * 0.05f)
+                    lineTo(w * 0.4f, h * 0.95f)
+                    lineTo(w * 0.45f, h * 0.45f)
+                    lineTo(w * 0.52f, h * 0.5f)
+                    lineTo(w * 0.65f, h * 0.5f)
+                    lineTo(w * 0.7f, h * 0.35f)
+                    lineTo(w * 0.75f, h * 0.5f)
+                    lineTo(w, h * 0.5f)
+                }
+                drawPath(
+                    path = path,
+                    color = Color(0xFFFF5252),
+                    style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(horizontalAlignment = Alignment.End) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Heart Rate", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color(0xFFFF5252)))
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text("$bpm", fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                Text("Normal", fontSize = 11.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Medium)
+            }
+        }
+    }
+}
+
+/**
+ * Image 1: Daily Walk Session Tags & Breathwork Gauges
+ */
+@Composable
+fun DailyWalkSessionReportCard(
+    morningWalk: String = "55 min 24 sec",
+    eveningWalk: String = "43 min 31 sec",
+    totalTime: String = "1h 38m 55s",
+    activityPct: Int = 42,
+    successPct: Int = 42,
+    modifier: Modifier = Modifier
+) {
+    PulseCard(modifier = modifier) {
+        Text(
+            text = "The day steps",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Session Tags Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = Color(0xFFFF6B35),
+                modifier = Modifier.weight(1f)
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Text("Morning walk", fontSize = 10.sp, color = Color.White.copy(alpha = 0.85f))
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(morningWalk, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            }
+
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = Color(0xFFFF6B35),
+                modifier = Modifier.weight(1f)
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Text("Evening walk", fontSize = 10.sp, color = Color.White.copy(alpha = 0.85f))
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(eveningWalk, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = Color(0xFFFF6B35).copy(alpha = 0.9f),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Total Time", fontSize = 12.sp, color = Color.White.copy(alpha = 0.9f))
+                Text(totalTime, fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color.White)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Breathwork Activity & Success Gauges
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Activity Gauge
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.weight(1f)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Activity", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Combining breathwork", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("$activityPct%", fontSize = 18.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                        Box(modifier = Modifier.size(42.dp), contentAlignment = Alignment.Center) {
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                drawArc(
+                                    color = Color(0xFFFF6B35),
+                                    startAngle = 180f,
+                                    sweepAngle = 180f * (activityPct / 100f),
+                                    useCenter = false,
+                                    style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Success Gauge
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.weight(1f)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text("Success", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Walking is the new happy hour", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("$successPct%", fontSize = 18.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                        Box(modifier = Modifier.size(42.dp), contentAlignment = Alignment.Center) {
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                drawArc(
+                                    color = Color(0xFFFFB142),
+                                    startAngle = 180f,
+                                    sweepAngle = 180f * (successPct / 100f),
+                                    useCenter = false,
+                                    style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Image 2: Radiant Semicircular Segmented Tachometer Arch Card (1190/3000 KCAL + 3 Macros)
+ */
+@Composable
+fun RadiantMacroTachometerCard(
+    currentKcal: Int = 1190,
+    targetKcal: Int = 3000,
+    proteinG: Int = 80,
+    proteinTargetG: Int = 150,
+    fatG: Int = 290,
+    fatTargetG: Int = 350,
+    carbsG: Int = 221,
+    carbsTargetG: Int = 250,
+    modifier: Modifier = Modifier
+) {
+    val extra = LocalExtraColors.current
+    PulseCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Scheduled Your Diet",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = extra.cardBorder.copy(alpha = 0.35f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text("📅", fontSize = 11.sp)
+                    Text("Calendar", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Semicircular Radiating Segmented Tachometer Arch
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(130.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+            ) {
+                val totalTicks = 24
+                val activeTicks = ((currentKcal.toFloat() / targetKcal.coerceAtLeast(1)) * totalTicks).toInt().coerceIn(1, totalTicks)
+                val center = Offset(size.width / 2f, size.height - 10.dp.toPx())
+                val outerRadius = size.height * 0.95f
+                val tickLength = 16.dp.toPx()
+                val tickWidth = 4.dp.toPx()
+
+                for (i in 0 until totalTicks) {
+                    val angleDeg = 180f + (180f * (i.toFloat() / (totalTicks - 1)))
+                    val angleRad = Math.toRadians(angleDeg.toDouble())
+
+                    val startX = center.x + (outerRadius - tickLength) * Math.cos(angleRad).toFloat()
+                    val startY = center.y + (outerRadius - tickLength) * Math.sin(angleRad).toFloat()
+                    val endX = center.x + outerRadius * Math.cos(angleRad).toFloat()
+                    val endY = center.y + outerRadius * Math.sin(angleRad).toFloat()
+
+                    val tickColor = if (i <= activeTicks) {
+                        val fraction = i.toFloat() / activeTicks.coerceAtLeast(1)
+                        if (fraction < 0.6f) Color(0xFFFF5722) else Color(0xFFFF9800)
+                    } else {
+                        Color(0xFFE5E7EB)
+                    }
+
+                    drawLine(
+                        color = tickColor,
+                        start = Offset(startX, startY),
+                        end = Offset(endX, endY),
+                        strokeWidth = tickWidth,
+                        cap = StrokeCap.Round
+                    )
+                }
+            }
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(bottom = 10.dp)
+            ) {
+                Text("🔥", fontSize = 20.sp)
+                Text(
+                    text = "$currentKcal/$targetKcal",
+                    fontSize = 19.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "KCAL",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 3-Macro Underlined Columns (Blue, Green, Purple)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Protein
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Protein", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("$proteinG/${proteinTargetG}g", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(modifier = Modifier.fillMaxWidth(0.85f).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFF3B82F6)))
+            }
+
+            // Fat
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Fat", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("$fatG/${fatTargetG}g", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(modifier = Modifier.fillMaxWidth(0.85f).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFF10B981)))
+            }
+
+            // Carbs
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Carbs", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("$carbsG/${carbsTargetG}g", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(modifier = Modifier.fillMaxWidth(0.85f).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFFA855F7)))
+            }
+        }
+    }
+}
+
+/**
+ * Image 2: Hydration (7/10 Cups 70%) and Heart Rate (68/125bpm 57%) Split Cards
+ */
+@Composable
+fun HydrationAndHeartSplitCards(
+    cupsCurrent: Int = 7,
+    cupsTarget: Int = 10,
+    heartBpm: Int = 68,
+    heartTargetBpm: Int = 125,
+    modifier: Modifier = Modifier
+) {
+    val extra = LocalExtraColors.current
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        // Water Card
+        PulseCard(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("💧", fontSize = 12.sp)
+                Text("Water", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("water intake", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("$cupsCurrent/$cupsTarget Cups", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                }
+
+                Box(modifier = Modifier.size(36.dp), contentAlignment = Alignment.Center) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        drawCircle(color = Color(0xFFFFB142).copy(alpha = 0.2f), style = Stroke(width = 3.dp.toPx()))
+                        drawArc(
+                            color = Color(0xFFFFB142),
+                            startAngle = -90f,
+                            sweepAngle = 360f * (cupsCurrent.toFloat() / cupsTarget),
+                            useCenter = false,
+                            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+                        )
+                    }
+                    Text("${((cupsCurrent.toFloat() / cupsTarget) * 100).toInt()}%", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        // Heart Card
+        PulseCard(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("❤️", fontSize = 12.sp)
+                Text("Heart", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("Heart Rate", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("$heartBpm/${heartTargetBpm}bpm", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                }
+
+                Box(modifier = Modifier.size(36.dp), contentAlignment = Alignment.Center) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        drawCircle(color = Color(0xFF3B82F6).copy(alpha = 0.2f), style = Stroke(width = 3.dp.toPx()))
+                        drawArc(
+                            color = Color(0xFF3B82F6),
+                            startAngle = -90f,
+                            sweepAngle = 360f * (heartBpm.toFloat() / heartTargetBpm),
+                            useCenter = false,
+                            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+                        )
+                    }
+                    Text("${((heartBpm.toFloat() / heartTargetBpm) * 100).toInt()}%", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Image 2: Today's Plan Schedule Timeline (Strength Training, Breakfast, etc.)
+ */
+@Composable
+fun TodaysPlanSection(
+    onSeeAllClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val extra = LocalExtraColors.current
+    PulseCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Today's Plan",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "See All",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable(onClick = onSeeAllClick)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Plan Item 1: Strength Training
+        Surface(
+            shape = RoundedCornerShape(18.dp),
+            color = extra.cardBorder.copy(alpha = 0.25f),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier.size(42.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFFE85B37).copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("🏋️", fontSize = 20.sp)
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Strength Training", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Upper Body Hypertrophy", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Text("07:00 AM", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Plan Item 2: Breakfast
+        Surface(
+            shape = RoundedCornerShape(18.dp),
+            color = extra.cardBorder.copy(alpha = 0.25f),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier.size(42.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFF10B981).copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("🥣", fontSize = 20.sp)
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Breakfast", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Protein Oats with Berries", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Text("07:00 AM", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+            }
+        }
+    }
+}
+
+/**
+ * Image 2: Hatched Weight Trend Cylinder Bar Chart (94.13 KG + Mon-Sun)
+ */
+@Composable
+fun WeightTrendHatchedCard(
+    currentWeightKg: Double = 94.13,
+    modifier: Modifier = Modifier
+) {
+    PulseCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Weight Trend",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Monthly Avg",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Text(
+                    text = "Last 4 Weeks ⌄",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = String.format("%.2f", currentWeightKg),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = " KG",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 3.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Hatched 3D Cylinder Bar Chart
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(90.dp)
+        ) {
+            val days = listOf("Tues", "Wed", "Thurs", "Fri", "Sat", "Sun", "Mon")
+            val barCount = days.size
+            val barWidth = 24.dp.toPx()
+            val totalW = size.width
+            val spacing = (totalW - (barCount * barWidth)) / (barCount - 1)
+            val heights = listOf(0.45f, 0.6f, 0.5f, 0.95f, 0.35f, 0.9f, 0.4f)
+
+            for (i in 0 until barCount) {
+                val x = i * (barWidth + spacing)
+                val h = heights[i] * size.height
+                val y = size.height - h
+
+                val isHatched = i == 3 || i == 5 // Friday & Sunday in orange hatched
+                val baseColor = if (isHatched) Color(0xFFFF6B35) else Color(0xFFE2E5EC)
+
+                drawRoundRect(
+                    color = baseColor,
+                    topLeft = Offset(x, y),
+                    size = Size(barWidth, h),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(10f, 10f)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            listOf("Tues", "Wed", "Thurs", "Fri", "Sat", "Sun", "Mon").forEach { day ->
+                Text(day, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+/**
+ * Image 2: BMI Continuous Spectrum Bar (Underweight, Healthy, Overweight, Obese)
+ */
+@Composable
+fun BmiSpectrumCard(
+    bmiValue: Double = 25.8,
+    category: String = "Healthy",
+    modifier: Modifier = Modifier
+) {
+    PulseCard(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Your Weight is", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF1E1F24)
+                ) {
+                    Text(category, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text("$bmiValue", fontSize = 22.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+            Text(" Good", fontSize = 12.sp, color = Color(0xFF10B981), fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 3.dp, start = 6.dp))
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Spectrum Gradient Bar
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(RoundedCornerShape(5.dp))
+        ) {
+            drawRoundRect(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        Color(0xFFF1C40F), // Underweight (Yellow)
+                        Color(0xFF2ECC71), // Healthy (Green)
+                        Color(0xFF3498DB), // Overweight (Blue)
+                        Color(0xFFE74C3C)  // Obese (Red)
+                    )
+                ),
+                size = size,
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(5.dp.toPx(), 5.dp.toPx())
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("• Underweight", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("• Healthy", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("• Overweight", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("• Obese", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/**
+ * Image 2: Upgrade to Premium Banner with Gradient
+ */
+@Composable
+fun PremiumUpgradeCard(
+    onUpgradeClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(6.dp, RoundedCornerShape(24.dp), spotColor = Color(0x306B5CE7)),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(Color(0xFF5352ED), Color(0xFFFF6B6B))
+                    )
+                )
+                .padding(20.dp)
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Upgrade To Premium",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text("👑", fontSize = 20.sp)
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Unlock Exclusive Features and AI meal recommendations",
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.9f),
+                    lineHeight = 16.sp
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Button(
+                    onClick = onUpgradeClick,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 6.dp)
+                ) {
+                    Text("Upgrade Now", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E1F24))
+                }
+            }
+        }
+    }
+}

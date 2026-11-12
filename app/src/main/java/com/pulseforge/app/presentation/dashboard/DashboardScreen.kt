@@ -63,13 +63,17 @@ fun DashboardScreen(
             ) {
                 Column {
                     Text(
-                        text = "PulseForge AI",
+                        text = if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LONGEVITY) "Your Fitness" 
+                               else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.WELLNESS) "Good Morning"
+                               else "PulseForge AI",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "${profile.primaryGoal.label} • ${profile.locality.label}",
+                        text = if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LONGEVITY) "Tina Lumia • Biometrics"
+                               else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.WELLNESS) "Claire Rosinkranz • Diet Plan"
+                               else "${profile.primaryGoal.label} • ${profile.locality.label}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -100,156 +104,265 @@ fun DashboardScreen(
             }
         }
 
-        // Exact Centered Header from Uploaded UI: "Let's start strong!"
-        item {
-            Text(
-                text = "Let's start\nstrong!",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                lineHeight = 34.sp
-            )
-        }
-
-        // Screen 1 Hero Card: "You're 45% to your daily goal" with Coral Lightning Action
-        item {
-            DailyGoalHeroCard(
-                percentText = "You're ${percentInt.coerceAtLeast(45)}% to your daily goal",
-                currentVal = "${nutrition.consumedCalories.toInt().coerceAtLeast(1240)}",
-                targetVal = "${nutrition.targetCalories}",
-                progress = calProgress.coerceAtLeast(0.45f),
-                onBoltClick = onNavigateToWorkout
-            )
-        }
-
-        // Screen 1 4 Circular Action Buttons: Workout, Meal, Water, Sync
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                CircularActionButton(
-                    icon = Icons.Default.FitnessCenter,
-                    label = "Workout",
-                    onClick = onNavigateToWorkout
-                )
-                CircularActionButton(
-                    icon = Icons.Default.Restaurant,
-                    label = "Meal",
-                    onClick = onNavigateToNutrition
-                )
-                CircularActionButton(
-                    icon = Icons.Default.WaterDrop,
-                    label = "Water",
-                    tint = Color(0xFF38BDF8),
-                    onClick = { onAddWater(250) }
-                )
-                CircularActionButton(
-                    icon = Icons.Default.CloudSync,
-                    label = "Sync",
-                    tint = MaterialTheme.colorScheme.primary,
-                    onClick = onCheckForUpdates
-                )
-            }
-        }
-
-        // Screen 1 Section: "Daily Summary"
-        item {
-            Text(
-                text = "Daily Summary",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        // Screen 1 Daily Summary Soft Card with Telemetry Dial
-        item {
-            PulseCard {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Text(
-                            text = "Steps",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "2.340",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Protein",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "${nutrition.consumedProteinG.toInt()} / ${nutrition.targetProteinG}g",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = extra.proteinColor
-                        )
-                    }
-
-                    // Centered Circular Progress Dial
-                    WhoopCircularTelemetryDial(
-                        current = nutrition.consumedCalories,
-                        target = nutrition.targetCalories.toDouble(),
-                        unit = "kcal",
-                        label = "BURNED",
-                        size = 110.dp,
-                        strokeWidth = 9.dp,
-                        activeColor = extra.calorieRing
+        // Layout variant based on active theme
+        when (profile.activeTheme) {
+            com.pulseforge.app.domain.model.ThemePalette.LONGEVITY -> {
+                // IMAGE 1: LONGEVITY CYBER / STEALTH LAYOUT
+                item {
+                    LongevityProgressHeroCard(
+                        progressPct = 60,
+                        timeframe = "Last week",
+                        onStartNow = onNavigateToWorkout
                     )
+                }
+                item {
+                    BiometricTriMetricsCard(
+                        heartRateBpm = 82,
+                        caloriesBurned = 25,
+                        caloriesTarget = 250,
+                        stepsCount = 450,
+                        stepsTarget = 5500
+                    )
+                }
+                item {
+                    BloodPressureCandleCard(
+                        systolic = 120,
+                        diastolic = 80
+                    )
+                }
+                item {
+                    EcgHeartRateCard(
+                        bpm = 80.5
+                    )
+                }
+                item {
+                    DailyWalkSessionReportCard(
+                        morningWalk = "55 min 24 sec",
+                        eveningWalk = "43 min 31 sec",
+                        totalTime = "1h 38m 55s",
+                        activityPct = 42,
+                        successPct = 42
+                    )
+                }
+            }
+            com.pulseforge.app.domain.model.ThemePalette.WELLNESS -> {
+                // IMAGE 2: CLEAN WELLNESS & MACRO TACHOMETER LAYOUT
+                item {
+                    RadiantMacroTachometerCard(
+                        currentKcal = 1190,
+                        targetKcal = 3000,
+                        proteinG = 80,
+                        proteinTargetG = 150,
+                        fatG = 290,
+                        fatTargetG = 350,
+                        carbsG = 221,
+                        carbsTargetG = 250
+                    )
+                }
+                item {
+                    HydrationAndHeartSplitCards(
+                        cupsCurrent = 7,
+                        cupsTarget = 10,
+                        heartBpm = 68,
+                        heartTargetBpm = 125
+                    )
+                }
+                item {
+                    TodaysPlanSection(
+                        onSeeAllClick = onNavigateToNutrition
+                    )
+                }
+                item {
+                    WeightTrendHatchedCard(
+                        currentWeightKg = 94.13
+                    )
+                }
+                item {
+                    BmiSpectrumCard(
+                        bmiValue = 25.8,
+                        category = "Healthy"
+                    )
+                }
+                item {
+                    PremiumUpgradeCard(
+                        onUpgradeClick = onNavigateToThemes
+                    )
+                }
+            }
+            else -> {
+                // SIGNATURE SOFT-CLAY TERRACOTTA CORAL LAYOUT
+                item {
+                    Text(
+                        text = "Let's start\nstrong!",
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        lineHeight = 34.sp
+                    )
+                }
 
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "Calories Burned",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                item {
+                    DailyGoalHeroCard(
+                        percentText = "You're ${percentInt.coerceAtLeast(45)}% to your daily goal",
+                        currentVal = "${nutrition.consumedCalories.toInt().coerceAtLeast(1240)}",
+                        targetVal = "${nutrition.targetCalories}",
+                        progress = calProgress.coerceAtLeast(0.45f),
+                        onBoltClick = onNavigateToWorkout
+                    )
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        CircularActionButton(
+                            icon = Icons.Default.FitnessCenter,
+                            label = "Workout",
+                            onClick = onNavigateToWorkout
                         )
-                        Text(
-                            text = "${nutrition.consumedCalories.toInt().coerceAtLeast(320)} kcal",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurface
+                        CircularActionButton(
+                            icon = Icons.Default.Restaurant,
+                            label = "Meal",
+                            onClick = onNavigateToNutrition
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Water",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        CircularActionButton(
+                            icon = Icons.Default.WaterDrop,
+                            label = "Water",
+                            tint = Color(0xFF38BDF8),
+                            onClick = { onAddWater(250) }
                         )
-                        Text(
-                            text = "${profile.waterConsumedMl} ml",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF38BDF8)
+                        CircularActionButton(
+                            icon = Icons.Default.CloudSync,
+                            label = "Sync",
+                            tint = MaterialTheme.colorScheme.primary,
+                            onClick = onCheckForUpdates
                         )
                     }
                 }
-            }
-        }
 
-        // Screen 2 Terracotta Coral Insight Card
-        item {
-            CoralInsightBanner(
-                title = "Stretching after workouts improves your sleep quality.",
-                onDismiss = {},
-                onSetRoutine = onNavigateToWorkout
-            )
+                item {
+                    Text(
+                        text = "Daily Summary",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+
+                item {
+                    PulseCard {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(horizontalAlignment = Alignment.Start) {
+                                Text(
+                                    text = "Steps",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "2.340",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Protein",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "${nutrition.consumedProteinG.toInt()} / ${nutrition.targetProteinG}g",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = extra.proteinColor
+                                )
+                            }
+
+                            WhoopCircularTelemetryDial(
+                                current = nutrition.consumedCalories,
+                                target = nutrition.targetCalories.toDouble(),
+                                unit = "KCAL",
+                                label = "BURNED",
+                                size = 110.dp,
+                                strokeWidth = 10.dp,
+                                activeColor = MaterialTheme.colorScheme.primary
+                            )
+
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "Calories Burned",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "320 kcal",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Water",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "${profile.waterConsumedMl} ml",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF38BDF8)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    CoralInsightBanner(
+                        title = "Stretching after workouts improves your sleep quality.",
+                        onDismiss = {},
+                        onSetRoutine = onNavigateToWorkout
+                    )
+                }
+
+                // Quick Previews of Additional Layouts (Tachometer & Longevity)
+                item {
+                    RadiantMacroTachometerCard(
+                        currentKcal = nutrition.consumedCalories.toInt().coerceAtLeast(1190),
+                        targetKcal = nutrition.targetCalories.coerceAtLeast(3000),
+                        proteinG = nutrition.consumedProteinG.toInt().coerceAtLeast(80),
+                        proteinTargetG = nutrition.targetProteinG,
+                        fatG = 290,
+                        fatTargetG = 350,
+                        carbsG = 221,
+                        carbsTargetG = 250
+                    )
+                }
+
+                item {
+                    HydrationAndHeartSplitCards(
+                        cupsCurrent = (profile.waterConsumedMl / 250).coerceIn(1, 10),
+                        cupsTarget = 10,
+                        heartBpm = 68,
+                        heartTargetBpm = 125
+                    )
+                }
+
+                item {
+                    TodaysPlanSection(onSeeAllClick = onNavigateToNutrition)
+                }
+            }
         }
 
         // High-Protein Shake Suggestion Card

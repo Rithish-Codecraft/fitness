@@ -64,7 +64,107 @@ object PulseThemeColors {
         floatingNavActiveText = Color(0xFF16171B)
     )
 
-    // 2. MACROFACTOR AMBER
+    // 2. LONGEVITY CYBER / STEALTH (Obsidian, Electric Orange #FF6B35 & Cyan #4E89AE - Exact to image 1)
+    val LongevityDarkScheme = darkColorScheme(
+        primary = Color(0xFFFF6B35),       // Electric Longevity Orange
+        onPrimary = Color(0xFFFFFFFF),
+        secondary = Color(0xFF4E89AE),     // Biometric Cyan / Blue
+        onSecondary = Color(0xFFFFFFFF),
+        background = Color(0xFF0F1218),    // Deep obsidian graphite
+        onBackground = Color(0xFFF1F5F9),
+        surface = Color(0xFF1B202A),       // Elevated charcoal slate card
+        onSurface = Color(0xFFF1F5F9),
+        surfaceVariant = Color(0xFF262D3B),
+        onSurfaceVariant = Color(0xFF94A3B8)
+    )
+    val LongevityLightScheme = lightColorScheme(
+        primary = Color(0xFFFF6B35),
+        onPrimary = Color(0xFFFFFFFF),
+        secondary = Color(0xFF4E89AE),
+        onSecondary = Color(0xFFFFFFFF),
+        background = Color(0xFFF0F3F7),
+        onBackground = Color(0xFF0F1218),
+        surface = Color(0xFFFFFFFF),
+        onSurface = Color(0xFF0F1218),
+        surfaceVariant = Color(0xFFE2E7EF),
+        onSurfaceVariant = Color(0xFF64748B)
+    )
+    val LongevityExtraDark = ExtraThemeColors(
+        accentGlow = Color(0xFFFF6B35),
+        cardBackground = Color(0xFF1B202A),
+        cardBorder = Color(0xFF2B3445),
+        proteinColor = Color(0xFFFF6B35),
+        carbsColor = Color(0xFF4E89AE),
+        fatColor = Color(0xFFFFC048),
+        calorieRing = Color(0xFFFF6B35),
+        floatingNavBackground = Color(0xFF12161E),
+        floatingNavActivePill = Color(0xFFFF6B35),
+        floatingNavActiveText = Color(0xFFFFFFFF)
+    )
+    val LongevityExtraLight = ExtraThemeColors(
+        accentGlow = Color(0xFFFF6B35),
+        cardBackground = Color(0xFFFFFFFF),
+        cardBorder = Color(0xFFDCE2EC),
+        proteinColor = Color(0xFFFF6B35),
+        carbsColor = Color(0xFF4E89AE),
+        fatColor = Color(0xFFFFC048),
+        calorieRing = Color(0xFFFF6B35),
+        floatingNavBackground = Color(0xFF12161E),
+        floatingNavActivePill = Color(0xFFFF6B35),
+        floatingNavActiveText = Color(0xFFFFFFFF)
+    )
+
+    // 3. MACRO TACHOMETER & CLEAN WELLNESS (Radiant Flame Orange & Daylight Alabaster - Exact to image 2)
+    val WellnessLightScheme = lightColorScheme(
+        primary = Color(0xFFFF6B35),       // Radiant Fire
+        onPrimary = Color(0xFFFFFFFF),
+        secondary = Color(0xFF4F46E5),     // Royal Indigo Accent
+        onSecondary = Color(0xFFFFFFFF),
+        background = Color(0xFFF7F8FA),    // Pristine porcelain alabaster
+        onBackground = Color(0xFF181A20),
+        surface = Color(0xFFFFFFFF),       // Elevated crisp white card
+        onSurface = Color(0xFF181A20),
+        surfaceVariant = Color(0xFFEFF1F5),
+        onSurfaceVariant = Color(0xFF717584)
+    )
+    val WellnessDarkScheme = darkColorScheme(
+        primary = Color(0xFFFF6B35),
+        onPrimary = Color(0xFFFFFFFF),
+        secondary = Color(0xFF818CF8),
+        onSecondary = Color(0xFF0F172A),
+        background = Color(0xFF111317),
+        onBackground = Color(0xFFF8FAFC),
+        surface = Color(0xFF1C1E24),
+        onSurface = Color(0xFFF8FAFC),
+        surfaceVariant = Color(0xFF282C35),
+        onSurfaceVariant = Color(0xFFA0A5B5)
+    )
+    val WellnessExtraLight = ExtraThemeColors(
+        accentGlow = Color(0xFFFF6B35),
+        cardBackground = Color(0xFFFFFFFF),
+        cardBorder = Color(0xFFE8EBF2),
+        proteinColor = Color(0xFF3B82F6),   // Blue underline
+        fatColor = Color(0xFF10B981),       // Green underline
+        carbsColor = Color(0xFFA855F7),     // Purple underline
+        calorieRing = Color(0xFFFF6B35),
+        floatingNavBackground = Color(0xFFFFFFFF),
+        floatingNavActivePill = Color(0xFFFF6B35),
+        floatingNavActiveText = Color(0xFFFFFFFF)
+    )
+    val WellnessExtraDark = ExtraThemeColors(
+        accentGlow = Color(0xFFFF6B35),
+        cardBackground = Color(0xFF1C1E24),
+        cardBorder = Color(0xFF2E3340),
+        proteinColor = Color(0xFF60A5FA),
+        fatColor = Color(0xFF34D399),
+        carbsColor = Color(0xFFC084FC),
+        calorieRing = Color(0xFFFF6B35),
+        floatingNavBackground = Color(0xFF181A20),
+        floatingNavActivePill = Color(0xFFFF6B35),
+        floatingNavActiveText = Color(0xFFFFFFFF)
+    )
+
+    // 4. MACROFACTOR AMBER
     val FireDarkScheme = darkColorScheme(
         primary = Color(0xFFFF643D),
         onPrimary = Color(0xFFFFFFFF),

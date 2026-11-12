@@ -48,7 +48,9 @@ fun ThemeSettingsScreen(
     var customUrl by remember { mutableStateOf(manifestUrl) }
 
     val themePreviews = listOf(
-        ThemePreviewItem(ThemePalette.POWER, Color(0xFF00FF87), Color(0xFF00E5FF), Color(0xFF090A0D)),
+        ThemePreviewItem(ThemePalette.POWER, Color(0xFFE85B37), Color(0xFF1E1F24), Color(0xFFF1F2F5)),
+        ThemePreviewItem(ThemePalette.LONGEVITY, Color(0xFFFF6B35), Color(0xFF4E89AE), Color(0xFF0F1218)),
+        ThemePreviewItem(ThemePalette.WELLNESS, Color(0xFFFF6B35), Color(0xFF4F46E5), Color(0xFFF7F8FA)),
         ThemePreviewItem(ThemePalette.FIRE, Color(0xFFFF643D), Color(0xFFF59E0B), Color(0xFF0E0E12)),
         ThemePreviewItem(ThemePalette.CALM, Color(0xFF10B981), Color(0xFFFBBF24), Color(0xFF070E0B)),
         ThemePreviewItem(ThemePalette.PEACE, Color(0xFF3B82F6), Color(0xFF38BDF8), Color(0xFF0A0E17)),
@@ -174,9 +176,9 @@ fun ThemeSettingsScreen(
         items(themePreviews) { item ->
             val isSelected = item.palette == activeTheme
             Card(
+                onClick = { onSelectTheme(item.palette) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onSelectTheme(item.palette) }
                     .then(
                         if (isSelected) {
                             Modifier.border(2.dp, item.primaryColor, RoundedCornerShape(16.dp))
