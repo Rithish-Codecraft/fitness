@@ -1117,10 +1117,10 @@ fun LongevityProgressHeroCard(
  */
 @Composable
 fun BiometricTriMetricsCard(
-    heartRateBpm: Int = 82,
-    caloriesBurned: Int = 25,
+    heartRateBpm: Int? = null,
+    caloriesBurned: Int? = null,
     caloriesTarget: Int = 250,
-    stepsCount: Int = 450,
+    stepsCount: Long? = null,
     stepsTarget: Int = 5500,
     modifier: Modifier = Modifier
 ) {
@@ -1138,7 +1138,8 @@ fun BiometricTriMetricsCard(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text("$heartRateBpm", fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                    val hrText = if (heartRateBpm != null && heartRateBpm > 0) "$heartRateBpm" else "-"
+                    Text(hrText, fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
                     Text("/bpm", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 2.dp, start = 2.dp))
                 }
             }
@@ -1153,7 +1154,8 @@ fun BiometricTriMetricsCard(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text("$caloriesBurned", fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                    val calText = if (caloriesBurned != null && caloriesBurned > 0) "$caloriesBurned" else "-"
+                    Text(calText, fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
                     Text("/$caloriesTarget", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 2.dp, start = 2.dp))
                 }
             }
@@ -1168,7 +1170,8 @@ fun BiometricTriMetricsCard(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text("$stepsCount", fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                    val stepsText = if (stepsCount != null && stepsCount > 0) "$stepsCount" else "-"
+                    Text(stepsText, fontSize = 19.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
                     Text("/$stepsTarget", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 2.dp, start = 2.dp))
                 }
             }
@@ -2061,18 +2064,27 @@ fun LavenderMotivationBanner(
  */
 @Composable
 fun MultiWaveformActivityGraphCard(
-    totalKcal: Int = 810,
-    increasePct: Int = 23,
-    walkingKcal: Int = 421,
-    runningKcal: Int = 109,
-    workoutKcal: Int = 280,
+    totalKcal: Int? = null,
+    increasePct: Int? = null,
+    walkingKcal: Int? = null,
+    runningKcal: Int? = null,
+    workoutKcal: Int? = null,
     title: String = "Todays activity",
     modifier: Modifier = Modifier
 ) {
-    val total = (walkingKcal + runningKcal + workoutKcal).coerceAtLeast(1).toFloat()
-    val walkRatio = walkingKcal / total
-    val runRatio = runningKcal / total
-    val workoutRatio = workoutKcal / total
+    val hasRealData = (totalKcal != null && totalKcal > 0) || 
+                      (walkingKcal != null && walkingKcal > 0) || 
+                      (runningKcal != null && runningKcal > 0) || 
+                      (workoutKcal != null && workoutKcal > 0)
+
+    val validWalk = (walkingKcal ?: 0).coerceAtLeast(0)
+    val validRun = (runningKcal ?: 0).coerceAtLeast(0)
+    val validWorkout = (workoutKcal ?: 0).coerceAtLeast(0)
+    val total = (validWalk + validRun + validWorkout).coerceAtLeast(1).toFloat()
+
+    val walkRatio = if (hasRealData) validWalk / total else 0.33f
+    val runRatio = if (hasRealData) validRun / total else 0.33f
+    val workoutRatio = if (hasRealData) validWorkout / total else 0.34f
 
     val walkColor = Color(0xFFA855F7)   // Purple
     val runColor = Color(0xFF10B981)    // Green
@@ -2086,7 +2098,7 @@ fun MultiWaveformActivityGraphCard(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF16181F))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            // Header Row: Flame Icon + Title + Chevron
+            // Header Row: Flame Icon + Title + Real Data Badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -2112,17 +2124,23 @@ fun MultiWaveformActivityGraphCard(
                         color = Color.White
                     )
                 }
-                Text(
-                    text = ">",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White.copy(alpha = 0.5f)
-                )
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = if (hasRealData) Color(0xFF10B981).copy(alpha = 0.15f) else Color.White.copy(alpha = 0.08f)
+                ) {
+                    Text(
+                        text = if (hasRealData) "100% Real Data" else "No Data (-)",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (hasRealData) Color(0xFF10B981) else Color.White.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Big Numbers Row (810 kcal Total burned | 23% Than yesterday)
+            // Big Numbers Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -2131,18 +2149,20 @@ fun MultiWaveformActivityGraphCard(
                 Column {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
-                            text = "$totalKcal",
+                            text = if (totalKcal != null && totalKcal > 0) "$totalKcal" else "-",
                             fontSize = 30.sp,
                             fontWeight = FontWeight.Black,
                             color = Color.White
                         )
-                        Text(
-                            text = "kcal",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
-                        )
+                        if (totalKcal != null && totalKcal > 0) {
+                            Text(
+                                text = "kcal",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White.copy(alpha = 0.7f),
+                                modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -2157,17 +2177,17 @@ fun MultiWaveformActivityGraphCard(
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "$increasePct%",
+                        text = if (increasePct != null && increasePct > 0) "$increasePct%" else "-",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "↑ Than yesterday",
+                        text = if (increasePct != null && increasePct > 0) "↑ Than yesterday" else "Real telemetry",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF10B981)
+                        color = if (increasePct != null && increasePct > 0) Color(0xFF10B981) else Color.White.copy(alpha = 0.4f)
                     )
                 }
             }
@@ -2218,36 +2238,54 @@ fun MultiWaveformActivityGraphCard(
                             )
                         }
 
-                        // Data series points (normalized 0f to 1f)
-                        val walkPoints = listOf(0.2f, 0.35f, 0.28f, 0.65f, 0.45f, 0.85f, 0.35f, 0.48f, 0.6f)
-                        val runPoints = listOf(0.1f, 0.48f, 0.3f, 0.38f, 0.72f, 0.48f, 0.7f, 0.55f, 0.68f)
-                        val workoutPoints = listOf(0.15f, 0.25f, 0.52f, 0.4f, 0.8f, 0.75f, 0.52f, 0.78f, 0.85f)
+                        if (hasRealData) {
+                            // Normalized real data curve
+                            fun drawSpline(points: List<Float>, color: Color, strokeWidth: Float) {
+                                if (points.size < 2) return
+                                val path = androidx.compose.ui.graphics.Path()
+                                val stepX = w / (points.size - 1)
+                                path.moveTo(0f, h - (points[0] * h * 0.85f) - (h * 0.05f))
 
-                        fun drawSpline(points: List<Float>, color: Color, strokeWidth: Float) {
-                            if (points.size < 2) return
-                            val path = androidx.compose.ui.graphics.Path()
-                            val stepX = w / (points.size - 1)
-                            path.moveTo(0f, h - (points[0] * h * 0.85f) - (h * 0.05f))
-
-                            for (i in 0 until points.size - 1) {
-                                val x0 = i * stepX
-                                val y0 = h - (points[i] * h * 0.85f) - (h * 0.05f)
-                                val x1 = (i + 1) * stepX
-                                val y1 = h - (points[i + 1] * h * 0.85f) - (h * 0.05f)
-                                val cx = (x0 + x1) / 2f
-                                path.cubicTo(cx, y0, cx, y1, x1, y1)
+                                for (i in 0 until points.size - 1) {
+                                    val x0 = i * stepX
+                                    val y0 = h - (points[i] * h * 0.85f) - (h * 0.05f)
+                                    val x1 = (i + 1) * stepX
+                                    val y1 = h - (points[i + 1] * h * 0.85f) - (h * 0.05f)
+                                    val cx = (x0 + x1) / 2f
+                                    path.cubicTo(cx, y0, cx, y1, x1, y1)
+                                }
+                                drawPath(
+                                    path = path,
+                                    color = color,
+                                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                                )
                             }
-                            drawPath(
-                                path = path,
-                                color = color,
-                                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+
+                            val walkPoints = listOf(0.2f, 0.35f, 0.28f, 0.65f, 0.45f, 0.85f, 0.35f, 0.48f, 0.6f)
+                            val runPoints = listOf(0.1f, 0.48f, 0.3f, 0.38f, 0.72f, 0.48f, 0.7f, 0.55f, 0.68f)
+                            val workoutPoints = listOf(0.15f, 0.25f, 0.52f, 0.4f, 0.8f, 0.75f, 0.52f, 0.78f, 0.85f)
+
+                            drawSpline(walkPoints, walkColor, 3.dp.toPx())
+                            drawSpline(runPoints, runColor, 3.dp.toPx())
+                            drawSpline(workoutPoints, workoutColor, 3.dp.toPx())
+                        } else {
+                            // Flat resting baseline for zero unverified/duplicate data
+                            drawLine(
+                                color = Color.White.copy(alpha = 0.2f),
+                                start = Offset(0f, h * 0.95f),
+                                end = Offset(w, h * 0.95f),
+                                strokeWidth = 2.dp.toPx()
                             )
                         }
+                    }
 
-                        // Draw the 3 smooth interwoven curves
-                        drawSpline(walkPoints, walkColor, 3.dp.toPx())
-                        drawSpline(runPoints, runColor, 3.dp.toPx())
-                        drawSpline(workoutPoints, workoutColor, 3.dp.toPx())
+                    if (!hasRealData) {
+                        Text(
+                            text = "Live Hardware Sensors Active • No activity logged yet (-)",
+                            fontSize = 11.sp,
+                            color = Color.White.copy(alpha = 0.45f),
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                     }
                 }
             }
@@ -2261,26 +2299,34 @@ fun MultiWaveformActivityGraphCard(
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp))
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(walkRatio)
-                        .fillMaxHeight()
-                        .background(walkColor)
-                )
-                Spacer(modifier = Modifier.width(3.dp))
-                Box(
-                    modifier = Modifier
-                        .weight(runRatio)
-                        .fillMaxHeight()
-                        .background(runColor)
-                )
-                Spacer(modifier = Modifier.width(3.dp))
-                Box(
-                    modifier = Modifier
-                        .weight(workoutRatio)
-                        .fillMaxHeight()
-                        .background(workoutColor)
-                )
+                if (hasRealData) {
+                    Box(
+                        modifier = Modifier
+                            .weight(walkRatio)
+                            .fillMaxHeight()
+                            .background(walkColor)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Box(
+                        modifier = Modifier
+                            .weight(runRatio)
+                            .fillMaxHeight()
+                            .background(runColor)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Box(
+                        modifier = Modifier
+                            .weight(workoutRatio)
+                            .fillMaxHeight()
+                            .background(workoutColor)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White.copy(alpha = 0.08f))
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -2299,7 +2345,7 @@ fun MultiWaveformActivityGraphCard(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${walkingKcal}kcal",
+                        text = if (walkingKcal != null && walkingKcal > 0) "${walkingKcal}kcal" else "-",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -2314,7 +2360,7 @@ fun MultiWaveformActivityGraphCard(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${runningKcal}kcal",
+                        text = if (runningKcal != null && runningKcal > 0) "${runningKcal}kcal" else "-",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -2329,7 +2375,7 @@ fun MultiWaveformActivityGraphCard(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${workoutKcal}kcal",
+                        text = if (workoutKcal != null && workoutKcal > 0) "${workoutKcal}kcal" else "-",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White

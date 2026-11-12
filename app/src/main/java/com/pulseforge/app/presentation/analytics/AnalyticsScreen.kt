@@ -69,41 +69,58 @@ fun AnalyticsScreen(
             }
         }
 
+        // Live 100% Real Phone Hardware Sensor Telemetry Card
+        item {
+            LivePhoneSensorsTelemetryCard(
+                telemetry = uiState.sensorTelemetry
+            )
+        }
+
         // Screen 2 Concentric Arc Breakdown Rings
         item {
             ConcentricRingsGaugeCard(
-                exerciseCurrentMin = 240,
+                exerciseCurrentMin = if (totalDurationMinutes > 0) totalDurationMinutes else 0,
                 exerciseTargetMin = 600,
-                standCurrentMin = 160,
+                standCurrentMin = 0,
                 standTargetMin = 600
             )
         }
 
         // Screen 2 Split Cards: Steps (Bar chart) & Distance (Route line)
+        val liveSteps = uiState.sensorTelemetry.stepCount
+        val liveDistM = uiState.sensorTelemetry.distanceMeters
+        val activeCal = uiState.sensorTelemetry.activeCaloriesBurned
+
+        val stepsStr = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-"
+        val distStr = if (liveDistM != null && liveDistM > 0) {
+            String.format("%.2f km", liveDistM / 1000.0)
+        } else "-"
+
         item {
             SplitMetricsCards(
-                stepsCount = "2.340",
-                distanceKm = "3.4km"
+                stepsCount = stepsStr,
+                distanceKm = distStr
             )
         }
 
         // Image 3: Motivational Lavender Progress Banner ("Just a Little More to Go", 75%)
         item {
+            val stepInt = liveSteps?.toInt() ?: 0
             LavenderMotivationBanner(
-                progressPct = 75,
-                title = "Just a Little More to Go",
-                subtitle = "You're crushing it! Stay on track and keep moving!"
+                progressPct = if (stepInt > 0) (stepInt * 100 / 10000).coerceIn(1, 100) else 0,
+                title = if (stepInt > 0) "Keep Moving" else "Hardware Sensors Active",
+                subtitle = if (stepInt > 0) "Every step counts towards your daily goal!" else "Carry phone during workouts to stream real biometrics."
             )
         }
 
-        // Image 3: Primary Multi-Line Waveform Activity Performance Graph (810 kcal, 23% Than yesterday)
+        // Image 3: Primary Multi-Line Waveform Activity Performance Graph
         item {
             MultiWaveformActivityGraphCard(
-                totalKcal = if (totalCaloriesBurned > 0) totalCaloriesBurned.toInt() else 810,
-                increasePct = 23,
-                walkingKcal = 421,
-                runningKcal = 109,
-                workoutKcal = 280,
+                totalKcal = if (activeCal != null && activeCal > 0) activeCal.toInt() else if (totalCaloriesBurned > 0) totalCaloriesBurned.toInt() else null,
+                increasePct = null,
+                walkingKcal = null,
+                runningKcal = null,
+                workoutKcal = null,
                 title = "Todays activity"
             )
         }
@@ -113,9 +130,15 @@ fun AnalyticsScreen(
             StartNewActivityCard()
         }
 
-        // Neo-Soft Lilac Graphic Update Spline Chart (100k Peak Callout, 4-Metric Statistics, Target Progress Bar)
+        // Neo-Soft Lilac Graphic Update Spline Chart (100% Real hardware data or clean baseline)
         item {
-            LavenderGraphicUpdateCard()
+            LavenderGraphicUpdateCard(
+                totalValue = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-",
+                lowestValue = "-",
+                highestValue = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-",
+                averageValue = if (activeCal != null && activeCal > 0) "${activeCal.toInt()} kcal" else "-",
+                peakTooltipValue = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-"
+            )
         }
 
         // Neo-Soft Lilac 7-Day Interactive Week Schedule Strip

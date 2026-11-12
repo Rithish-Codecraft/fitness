@@ -35,7 +35,8 @@ fun DashboardScreen(
     onNavigateToThemes: () -> Unit,
     onNavigateToOnboarding: () -> Unit,
     onAddWater: (Int) -> Unit,
-    onCheckForUpdates: () -> Unit = {}
+    onCheckForUpdates: () -> Unit = {},
+    onSimulateStepPulse: (() -> Unit)? = null
 ) {
     val extra = LocalExtraColors.current
     val profile = uiState.userProfile
@@ -61,24 +62,36 @@ fun DashboardScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LONGEVITY) "Your Fitness" 
-                               else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.WELLNESS) "Good Morning"
-                               else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LAVENDER) "Hi, Welcome back."
-                               else "PulseForge AI",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(id = com.pulseforge.app.R.drawable.app_logo),
+                        contentDescription = "PulseForge AI Logo",
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(RoundedCornerShape(12.dp))
                     )
-                    Text(
-                        text = if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LONGEVITY) "Tina Lumia • Biometrics"
-                               else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.WELLNESS) "Claire Rosinkranz • Diet Plan"
-                               else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LAVENDER) "Khyati Gajjar • Neo-Soft Lilac"
-                               else "${profile.primaryGoal.label} • ${profile.locality.label}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column {
+                        Text(
+                            text = if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LONGEVITY) "Your Fitness" 
+                                   else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.WELLNESS) "Good Morning"
+                                   else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LAVENDER) "Hi, Welcome back."
+                                   else "PulseForge AI",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LONGEVITY) "Tina Lumia • Biometrics"
+                                   else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.WELLNESS) "Claire Rosinkranz • Diet Plan"
+                                   else if (profile.activeTheme == com.pulseforge.app.domain.model.ThemePalette.LAVENDER) "Khyati Gajjar • Neo-Soft Lilac"
+                                   else "${profile.primaryGoal.label} • ${profile.locality.label}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     IconButton(onClick = onCheckForUpdates) {
@@ -106,6 +119,14 @@ fun DashboardScreen(
             }
         }
 
+        // 100% Real Phone Hardware Sensor Telemetry Card (9 Hardware Streams)
+        item {
+            LivePhoneSensorsTelemetryCard(
+                telemetry = uiState.sensorTelemetry,
+                onSimulateStepPulse = onSimulateStepPulse
+            )
+        }
+
         // Layout variant based on active theme
         when (profile.activeTheme) {
             com.pulseforge.app.domain.model.ThemePalette.LAVENDER -> {
@@ -117,7 +138,15 @@ fun DashboardScreen(
                     LavenderHighlightUpdateRow()
                 }
                 item {
-                    LavenderGraphicUpdateCard()
+                    val liveSteps = uiState.sensorTelemetry.stepCount
+                    val liveCal = uiState.sensorTelemetry.activeCaloriesBurned
+                    LavenderGraphicUpdateCard(
+                        totalValue = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-",
+                        lowestValue = "-",
+                        highestValue = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-",
+                        averageValue = if (liveCal != null && liveCal > 0) "${liveCal.toInt()} kcal" else "-",
+                        peakTooltipValue = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-"
+                    )
                 }
                 item {
                     LavenderWeekScheduleCard()
@@ -155,10 +184,10 @@ fun DashboardScreen(
                 }
                 item {
                     BiometricTriMetricsCard(
-                        heartRateBpm = 82,
-                        caloriesBurned = 25,
+                        heartRateBpm = null,
+                        caloriesBurned = uiState.sensorTelemetry.activeCaloriesBurned?.toInt(),
                         caloriesTarget = 250,
-                        stepsCount = 450,
+                        stepsCount = uiState.sensorTelemetry.stepCount,
                         stepsTarget = 5500
                     )
                 }
@@ -295,6 +324,9 @@ fun DashboardScreen(
                 }
 
                 item {
+                    val liveSteps = uiState.sensorTelemetry.stepCount
+                    val activeCal = uiState.sensorTelemetry.activeCaloriesBurned
+
                     PulseCard {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -308,7 +340,7 @@ fun DashboardScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "2.340",
+                                    text = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Black,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -344,7 +376,7 @@ fun DashboardScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "320 kcal",
+                                    text = if (activeCal != null && activeCal > 0) "${activeCal.toInt()} kcal" else "-",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Black,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -402,22 +434,27 @@ fun DashboardScreen(
                 }
 
                 item {
+                    val activeCal = uiState.sensorTelemetry.activeCaloriesBurned?.toInt()
                     MultiWaveformActivityGraphCard(
-                        totalKcal = 810,
-                        increasePct = 23,
-                        walkingKcal = 421,
-                        runningKcal = 109,
-                        workoutKcal = 280,
+                        totalKcal = activeCal,
+                        increasePct = null,
+                        walkingKcal = null,
+                        runningKcal = null,
+                        workoutKcal = null,
                         title = "Todays activity"
                     )
                 }
 
                 // Reference: Arch Vault Trio (Calories, Time, Distance)
                 item {
+                    val activeCal = uiState.sensorTelemetry.activeCaloriesBurned?.toInt()
+                    val distMiles = if (uiState.sensorTelemetry.distanceMeters != null && uiState.sensorTelemetry.distanceMeters > 0) {
+                        String.format("%.2f", uiState.sensorTelemetry.distanceMeters / 1609.34)
+                    } else "-"
                     ArchVaultTrioCard(
-                        caloriesKcal = 456,
-                        timeMinutes = "2:05",
-                        distanceMiles = "3.25"
+                        caloriesKcal = activeCal,
+                        timeMinutes = "-",
+                        distanceMiles = distMiles
                     )
                 }
 

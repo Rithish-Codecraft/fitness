@@ -39,13 +39,15 @@ data class MainUiState(
     val isScanning: Boolean = false,
     val activeWorkoutInProgress: Boolean = false,
     val updateState: UpdateState = UpdateState.Idle,
-    val updateManifestUrl: String = "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/version.json"
+    val updateManifestUrl: String = "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/version.json",
+    val sensorTelemetry: PhoneSensorTelemetry = PhoneSensorTelemetry()
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val database = PulseForgeDatabase.getInstance(application)
     private val repository = PulseForgeRepositoryImpl(database)
+    private val telemetryManager = com.pulseforge.app.core.telemetry.PhoneTelemetryManager(application)
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -55,6 +57,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         observeWorkouts()
         observeReviews()
         refreshDashboardWidgets()
+        observeSensorTelemetry()
+    }
+
+    private fun observeSensorTelemetry() {
+        telemetryManager.startListening(userWeightKg = _uiState.value.userProfile.currentWeightKg)
+        viewModelScope.launch {
+            telemetryManager.telemetry.collect { telemetry ->
+                _uiState.update { it.copy(sensorTelemetry = telemetry) }
+            }
+        }
+    }
+
+    fun triggerHardwareStepPulse(steps: Int = 10) {
+        telemetryManager.addRealStepPulse(steps)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        telemetryManager.stopListening()
     }
 
     private fun observeUserProfile() {

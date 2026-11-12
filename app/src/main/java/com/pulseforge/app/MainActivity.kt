@@ -181,7 +181,8 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToThemes = { navController.navigate(Screen.Themes.route) },
                                 onNavigateToOnboarding = { navController.navigate(Screen.Onboarding.route) },
                                 onAddWater = { viewModel.addWater(it) },
-                                onCheckForUpdates = { viewModel.checkForUpdates() }
+                                onCheckForUpdates = { viewModel.checkForUpdates() },
+                                onSimulateStepPulse = { viewModel.triggerHardwareStepPulse(25) }
                             )
                         }
 

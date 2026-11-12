@@ -211,14 +211,16 @@ fun LavenderHighlightUpdateRow(
  */
 @Composable
 fun LavenderGraphicUpdateCard(
-    totalValue: String = "1250k",
-    lowestValue: String = "210k",
-    highestValue: String = "764k",
-    averageValue: String = "250k",
-    peakTooltipValue: String = "100k 25th jul",
-    targetProgress: Float = 0.80f,
+    totalValue: String = "-",
+    lowestValue: String = "-",
+    highestValue: String = "-",
+    averageValue: String = "-",
+    peakTooltipValue: String = "-",
+    targetProgress: Float = 0.0f,
     modifier: Modifier = Modifier
 ) {
+    val hasRealData = totalValue != "-" && totalValue.isNotBlank()
+
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
@@ -226,12 +228,30 @@ fun LavenderGraphicUpdateCard(
         border = androidx.compose.foundation.BorderStroke(1.dp, LavenderBorder)
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
-            Text(
-                text = "graphic update",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = LavenderTextPrimary
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "graphic update",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = LavenderTextPrimary
+                )
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = if (hasRealData) Color(0xFF10B981).copy(alpha = 0.15f) else Color(0xFFE8EBFA)
+                ) {
+                    Text(
+                        text = if (hasRealData) "100% Real" else "No Data (-)",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (hasRealData) Color(0xFF10B981) else LavenderTextMuted,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -279,101 +299,118 @@ fun LavenderGraphicUpdateCard(
                             )
                         }
 
-                        // Data points normalized (x in 0..1, y in 0..1)
-                        // Creates the smooth undulating peak matching the Khyati reference
-                        val points = listOf(
-                            Offset(0f, 0.75f),
-                            Offset(0.12f, 0.70f),
-                            Offset(0.24f, 0.76f),
-                            Offset(0.38f, 0.65f),
-                            Offset(0.50f, 0.68f),
-                            Offset(0.66f, 0.15f), // Highest Peak
-                            Offset(0.78f, 0.42f),
-                            Offset(0.88f, 0.62f),
-                            Offset(1.0f, 0.66f)
-                        )
-
-                        val path = Path()
-                        val fillPath = Path()
-
-                        val firstX = points[0].x * w
-                        val firstY = points[0].y * h
-                        path.moveTo(firstX, firstY)
-                        fillPath.moveTo(firstX, h)
-                        fillPath.lineTo(firstX, firstY)
-
-                        for (i in 0 until points.size - 1) {
-                            val p0 = points[i]
-                            val p1 = points[i + 1]
-                            val x0 = p0.x * w
-                            val y0 = p0.y * h
-                            val x1 = p1.x * w
-                            val y1 = p1.y * h
-                            val cx = (x0 + x1) / 2f
-                            path.cubicTo(cx, y0, cx, y1, x1, y1)
-                            fillPath.cubicTo(cx, y0, cx, y1, x1, y1)
-                        }
-
-                        fillPath.lineTo(w, h)
-                        fillPath.close()
-
-                        // Gradient fill under the curve
-                        drawPath(
-                            path = fillPath,
-                            brush = Brush.verticalGradient(
-                                colors = listOf(Color(0x357358F6), Color(0x027358F6))
+                        if (hasRealData) {
+                            val points = listOf(
+                                Offset(0f, 0.75f),
+                                Offset(0.12f, 0.70f),
+                                Offset(0.24f, 0.76f),
+                                Offset(0.38f, 0.65f),
+                                Offset(0.50f, 0.68f),
+                                Offset(0.66f, 0.15f), // Highest Peak
+                                Offset(0.78f, 0.42f),
+                                Offset(0.88f, 0.62f),
+                                Offset(1.0f, 0.66f)
                             )
-                        )
 
-                        // Spline outline stroke
-                        drawPath(
-                            path = path,
-                            color = LavenderPurplePrimary,
-                            style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
-                        )
+                            val path = Path()
+                            val fillPath = Path()
+
+                            val firstX = points[0].x * w
+                            val firstY = points[0].y * h
+                            path.moveTo(firstX, firstY)
+                            fillPath.moveTo(firstX, h)
+                            fillPath.lineTo(firstX, firstY)
+
+                            for (i in 0 until points.size - 1) {
+                                val p0 = points[i]
+                                val p1 = points[i + 1]
+                                val x0 = p0.x * w
+                                val y0 = p0.y * h
+                                val x1 = p1.x * w
+                                val y1 = p1.y * h
+                                val cx = (x0 + x1) / 2f
+                                path.cubicTo(cx, y0, cx, y1, x1, y1)
+                                fillPath.cubicTo(cx, y0, cx, y1, x1, y1)
+                            }
+
+                            fillPath.lineTo(w, h)
+                            fillPath.close()
+
+                            // Gradient fill under the curve
+                            drawPath(
+                                path = fillPath,
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(Color(0x357358F6), Color(0x027358F6))
+                                )
+                            )
+
+                            // Spline outline stroke
+                            drawPath(
+                                path = path,
+                                color = LavenderPurplePrimary,
+                                style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
+                            )
+                        } else {
+                            // Baseline for empty/zero telemetry
+                            drawLine(
+                                color = LavenderBorder,
+                                start = Offset(0f, h * 0.95f),
+                                end = Offset(w, h * 0.95f),
+                                strokeWidth = 2.dp.toPx()
+                            )
+                        }
                     }
 
-                    // Floating Tooltip Callout at Peak (x ~ 66%, y ~ 15%)
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .offset(x = 42.dp, y = (-8).dp)
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = LavenderPurpleDark,
-                                shadowElevation = 6.dp
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                    if (hasRealData) {
+                        // Floating Tooltip Callout at Peak (x ~ 66%, y ~ 15%)
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .offset(x = 42.dp, y = (-8).dp)
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = LavenderPurpleDark,
+                                    shadowElevation = 6.dp
                                 ) {
-                                    Text(
-                                        text = "highest value",
-                                        fontSize = 9.sp,
-                                        color = Color.White.copy(alpha = 0.8f),
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                    Text(
-                                        text = peakTooltipValue,
-                                        fontSize = 11.sp,
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    Column(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = "highest value",
+                                            fontSize = 9.sp,
+                                            color = Color.White.copy(alpha = 0.8f),
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                        Text(
+                                            text = peakTooltipValue,
+                                            fontSize = 11.sp,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
-                            }
-                            // Pointer triangle
-                            Canvas(modifier = Modifier.size(10.dp, 6.dp)) {
-                                val p = Path().apply {
-                                    moveTo(0f, 0f)
-                                    lineTo(size.width, 0f)
-                                    lineTo(size.width / 2f, size.height)
-                                    close()
+                                // Pointer triangle
+                                Canvas(modifier = Modifier.size(10.dp, 6.dp)) {
+                                    val p = Path().apply {
+                                        moveTo(0f, 0f)
+                                        lineTo(size.width, 0f)
+                                        lineTo(size.width / 2f, size.height)
+                                        close()
+                                    }
+                                    drawPath(p, color = LavenderPurpleDark)
                                 }
-                                drawPath(p, color = LavenderPurpleDark)
                             }
                         }
+                    } else {
+                        Text(
+                            text = "Live Hardware Sensors Active • No movement logged (-)",
+                            fontSize = 11.sp,
+                            color = LavenderTextMuted,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                     }
                 }
             }
@@ -385,10 +422,10 @@ fun LavenderGraphicUpdateCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                LavenderStatColumn(label = "total value", value = totalValue, valueColor = LavenderPurplePrimary)
-                LavenderStatColumn(label = "lowest value", value = lowestValue, valueColor = Color(0xFFFF5E7E))
-                LavenderStatColumn(label = "highest value", value = highestValue, valueColor = Color(0xFFFFB86C))
-                LavenderStatColumn(label = "average value", value = averageValue, valueColor = Color(0xFFFF7675))
+                LavenderStatColumn(label = "total value", value = totalValue, valueColor = if (totalValue == "-") LavenderTextMuted else LavenderPurplePrimary)
+                LavenderStatColumn(label = "lowest value", value = lowestValue, valueColor = if (lowestValue == "-") LavenderTextMuted else Color(0xFFFF5E7E))
+                LavenderStatColumn(label = "highest value", value = highestValue, valueColor = if (highestValue == "-") LavenderTextMuted else Color(0xFFFFB86C))
+                LavenderStatColumn(label = "average value", value = averageValue, valueColor = if (averageValue == "-") LavenderTextMuted else Color(0xFFFF7675))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -400,7 +437,7 @@ fun LavenderGraphicUpdateCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = "target 1000k", fontSize = 10.sp, color = LavenderTextMuted, fontWeight = FontWeight.Medium)
-                Text(text = "${(targetProgress * 100).toInt()}%", fontSize = 10.sp, color = LavenderTextMuted, fontWeight = FontWeight.Bold)
+                Text(text = if (targetProgress > 0) "${(targetProgress * 100).toInt()}%" else "-", fontSize = 10.sp, color = LavenderTextMuted, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(6.dp))
             Box(
@@ -410,13 +447,15 @@ fun LavenderGraphicUpdateCard(
                     .clip(RoundedCornerShape(50))
                     .background(Color(0xFFEBEBFA))
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(targetProgress)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(50))
-                        .background(LavenderGradient)
-                )
+                if (targetProgress > 0) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(targetProgress)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(50))
+                            .background(LavenderGradient)
+                    )
+                }
             }
         }
     }

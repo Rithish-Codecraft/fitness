@@ -162,3 +162,45 @@ data class WeeklyProgressReview(
     val aiRecommendation: String
 )
 
+/**
+ * 100% Real Android Phone Hardware Sensor & Telemetry Data
+ */
+data class PhoneSensorTelemetry(
+    val stepCount: Long? = null,
+    val stepCadenceSpm: Double? = null,
+    val activityType: DetectedActivityType = DetectedActivityType.STILL,
+    val distanceMeters: Double? = null,
+    val speedKmh: Double? = null,
+    val paceMinPerKm: Double? = null,
+    val gpsRoute: List<GpsWaypoint> = emptyList(),
+    val elevationGainMeters: Double? = null,
+    val floorsClimbed: Int? = null,
+    val activeCaloriesBurned: Double? = null,
+    val sleepEstimate: SleepTelemetryEstimate? = null,
+    val isSensorAvailable: Boolean = true
+)
+
+enum class DetectedActivityType(val label: String) {
+    STILL("Still / Sedentary"),
+    WALKING("Walking"),
+    RUNNING("Running"),
+    CYCLING("Cycling"),
+    IN_VEHICLE("In Vehicle"),
+    UNKNOWN("Detecting...")
+}
+
+data class GpsWaypoint(
+    val latitude: Double,
+    val longitude: Double,
+    val altitudeMeters: Double,
+    val timestampMillis: Long
+)
+
+data class SleepTelemetryEstimate(
+    val sleepStartTime: String = "-",
+    val wakeTime: String = "-",
+    val totalHours: Double? = null,
+    val sleepEfficiencyPct: Int? = null,
+    val deepSleepPct: Int? = null
+)
+

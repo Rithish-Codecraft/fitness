@@ -34,11 +34,13 @@ import com.pulseforge.app.domain.model.MealType
  */
 @Composable
 fun ArchVaultTrioCard(
-    caloriesKcal: Int = 456,
-    timeMinutes: String = "2:05",
-    distanceMiles: String = "3.25",
+    caloriesKcal: Int? = null,
+    timeMinutes: String = "-",
+    distanceMiles: String = "-",
     modifier: Modifier = Modifier
 ) {
+    val calText = if (caloriesKcal != null && caloriesKcal > 0) "$caloriesKcal" else "-"
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -49,7 +51,7 @@ fun ArchVaultTrioCard(
             archColor = Color(0xFF68B2BD),
             icon = Icons.Default.LocalFireDepartment,
             label = "Calories",
-            value = "$caloriesKcal",
+            value = calText,
             unit = "kcal"
         )
         // Vault 2: Time (Green Arch)
