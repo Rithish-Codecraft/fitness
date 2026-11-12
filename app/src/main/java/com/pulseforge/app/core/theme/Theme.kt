@@ -14,18 +14,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.pulseforge.app.domain.model.ThemePalette
 
-val LocalExtraColors = staticCompositionLocalOf { PulseThemeColors.PowerExtraDark }
+val LocalExtraColors = staticCompositionLocalOf { PulseThemeColors.PowerExtraLight }
 
 val PulseTypography = Typography(
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Black,
         fontSize = 28.sp,
         lineHeight = 34.sp
     ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
         lineHeight = 28.sp
     ),
@@ -58,12 +58,27 @@ val PulseTypography = Typography(
 @Composable
 fun PulseForgeTheme(
     palette: ThemePalette = ThemePalette.POWER,
-    isDarkMode: Boolean = true,
+    isDarkMode: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val (colorScheme, extraColors) = when (palette) {
-        ThemePalette.POWER -> PulseThemeColors.PowerDarkScheme to PulseThemeColors.PowerExtraDark
-        ThemePalette.FIRE -> PulseThemeColors.FireDarkScheme to PulseThemeColors.FireExtraDark
+        ThemePalette.POWER -> {
+            if (isDarkMode) PulseThemeColors.PowerDarkScheme to PulseThemeColors.PowerExtraDark
+            else PulseThemeColors.PowerLightScheme to PulseThemeColors.PowerExtraLight
+        }
+        ThemePalette.FIRE -> {
+            if (isDarkMode) PulseThemeColors.FireDarkScheme to PulseThemeColors.FireExtraDark
+            else lightColorScheme(
+                primary = PulseThemeColors.FireDarkScheme.primary,
+                background = PulseThemeColors.PowerLightScheme.background,
+                surface = PulseThemeColors.PowerLightScheme.surface,
+                onBackground = PulseThemeColors.PowerLightScheme.onBackground,
+                onSurface = PulseThemeColors.PowerLightScheme.onSurface
+            ) to PulseThemeColors.FireExtraDark.copy(
+                cardBackground = PulseThemeColors.PowerExtraLight.cardBackground,
+                cardBorder = PulseThemeColors.PowerExtraLight.cardBorder
+            )
+        }
         ThemePalette.CALM -> PulseThemeColors.CalmDarkScheme to PulseThemeColors.CalmExtraDark
         ThemePalette.PEACE -> PulseThemeColors.PeaceDarkScheme to PulseThemeColors.PeaceExtraDark
         ThemePalette.WARM -> PulseThemeColors.WarmDarkScheme to PulseThemeColors.WarmExtraDark
@@ -71,25 +86,11 @@ fun PulseForgeTheme(
         ThemePalette.LIGHT -> PulseThemeColors.LightScheme to PulseThemeColors.LightExtra
     }
 
-    // If user explicitly requests Light mode on any dark theme, adapt surfaces
-    val resolvedScheme = if (!isDarkMode && palette != ThemePalette.LIGHT) {
-        lightColorScheme(
-            primary = colorScheme.primary,
-            secondary = colorScheme.secondary,
-            background = PulseThemeColors.LightScheme.background,
-            surface = PulseThemeColors.LightScheme.surface,
-            onPrimary = colorScheme.onPrimary,
-            onBackground = PulseThemeColors.LightScheme.onBackground,
-            onSurface = PulseThemeColors.LightScheme.onSurface
-        )
-    } else colorScheme
-
     CompositionLocalProvider(LocalExtraColors provides extraColors) {
         MaterialTheme(
-            colorScheme = resolvedScheme,
+            colorScheme = colorScheme,
             typography = PulseTypography,
             content = content
         )
     }
 }
-

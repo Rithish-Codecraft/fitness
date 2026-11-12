@@ -1,10 +1,10 @@
 {
-  "versionCode": 2,
-  "versionName": "1.1.0",
+  "versionCode": 3,
+  "versionName": "1.2.0",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• New AI food recognition engine with enhanced accuracy\n• Added market-leading UI themes (Whoop, Hevy, MacroFactor, Apple Activity)\n• Faster muscle hypertrophy volume load analytics\n• On-device nutrition label OCR optimizations",
+  "releaseNotes": "• New Soft-Clay Terracotta Coral UI (Dashboard, Progress Analytics & AI Coach)\n• Floating dark matte capsule navigation with active elevated pill tabs\n• Concentric exercise & stand telemetry arc breakdown\n• Conversational AI Coach stream with activity chips and glowing assistant orb\n• Interactive split metrics for steps and distance routes",
   "isMandatory": false,
   "minSupportedVersion": 1,
-  "fileSizeBytes": 52770083,
+  "fileSizeBytes": 52786467,
   "sha256": ""
 }

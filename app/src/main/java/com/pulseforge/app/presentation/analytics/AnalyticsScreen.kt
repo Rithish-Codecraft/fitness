@@ -21,15 +21,12 @@ import com.pulseforge.app.core.theme.LocalExtraColors
 import com.pulseforge.app.domain.model.EquipmentType
 import com.pulseforge.app.domain.model.MuscleGroup
 import com.pulseforge.app.presentation.MainUiState
-import com.pulseforge.app.presentation.components.MetricBadge
-import com.pulseforge.app.presentation.components.PulseCard
-import com.pulseforge.app.presentation.components.SectionHeader
+import com.pulseforge.app.presentation.components.*
 
 enum class TimeHorizon(val label: String) {
     DAILY("Daily"),
     WEEKLY("Weekly"),
-    MONTHLY("Monthly"),
-    MAXIMUM("All-Time PRs")
+    MONTHLY("Monthly")
 }
 
 @Composable
@@ -37,7 +34,8 @@ fun AnalyticsScreen(
     uiState: MainUiState
 ) {
     val extra = LocalExtraColors.current
-    var selectedHorizon by remember { mutableStateOf(TimeHorizon.WEEKLY) }
+    var selectedHorizonIndex by remember { mutableStateOf(1) } // Weekly default
+    var bannerDismissed by remember { mutableStateOf(false) }
 
     val sessions = uiState.workoutSessions
     val totalTonnage = sessions.sumOf { it.totalVolumeKg }
@@ -48,38 +46,52 @@ fun AnalyticsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
+            .padding(horizontal = 18.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Time Horizon Filter Capsule Selector (Matching Screen 2)
         item {
-            SectionHeader(
-                title = "Performance Analytics & Graphs",
-                subtitle = "Track Kcal burn, volume load, 1RM curves, and muscle balance"
+            TimeHorizonCapsuleSelector(
+                options = listOf("Daily", "Weekly", "Monthly"),
+                selectedIndex = selectedHorizonIndex,
+                onSelectIndex = { selectedHorizonIndex = it }
             )
         }
 
-        // Time Horizon Filter Selector
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                TimeHorizon.values().forEach { horizon ->
-                    FilterChip(
-                        selected = selectedHorizon == horizon,
-                        onClick = { selectedHorizon = horizon },
-                        label = { Text(horizon.label) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+        // Screen 2 Terracotta Coral Insight Banner
+        if (!bannerDismissed) {
+            item {
+                CoralInsightBanner(
+                    title = "Stretching after workouts improves your sleep quality.",
+                    onDismiss = { bannerDismissed = true },
+                    onSetRoutine = { bannerDismissed = true }
+                )
             }
+        }
+
+        // Screen 2 Concentric Arc Breakdown Rings
+        item {
+            ConcentricRingsGaugeCard(
+                exerciseCurrentMin = 240,
+                exerciseTargetMin = 600,
+                standCurrentMin = 160,
+                standTargetMin = 600
+            )
+        }
+
+        // Screen 2 Split Cards: Steps (Bar chart) & Distance (Route line)
+        item {
+            SplitMetricsCards(
+                stepsCount = "2.340",
+                distanceKm = "3.4km"
+            )
         }
 
         // Lifetime / Selected Horizon Totals
         item {
             PulseCard {
                 Text(
-                    text = "Aggregate Statistics (${selectedHorizon.label})",
+                    text = "Aggregate Statistics (${if (selectedHorizonIndex == 0) "Daily" else if (selectedHorizonIndex == 1) "Weekly" else "Monthly"})",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

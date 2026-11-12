@@ -25,7 +25,7 @@ data class UserProfile(
     val waterTargetMl: Int = 3000,
     val waterConsumedMl: Int = 1250,
     val activeTheme: ThemePalette = ThemePalette.POWER,
-    val isDarkMode: Boolean = true,
+    val isDarkMode: Boolean = false,
     val isOnboarded: Boolean = true
 )
 

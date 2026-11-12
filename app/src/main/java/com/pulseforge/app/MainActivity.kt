@@ -7,11 +7,17 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -75,25 +81,86 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        // Only show bottom bar on primary tabs
+                        // Floating Matte Capsule Bottom Navigation Bar (Matching uploaded UI)
                         val showBottomBar = BottomNavItems.any { it.route == currentRoute }
                         if (showBottomBar) {
-                            NavigationBar {
-                                BottomNavItems.forEach { screen ->
-                                    NavigationBarItem(
-                                        icon = { Icon(screen.icon, contentDescription = screen.title) },
-                                        label = { Text(screen.title) },
-                                        selected = currentRoute == screen.route,
-                                        onClick = {
-                                            if (currentRoute != screen.route) {
-                                                navController.navigate(screen.route) {
-                                                    popUpTo(Screen.Dashboard.route) { saveState = true }
-                                                    launchSingleTop = true
-                                                    restoreState = true
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .navigationBarsPadding()
+                                    .padding(horizontal = 20.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(64.dp)
+                                        .shadow(
+                                            elevation = 10.dp,
+                                            shape = RoundedCornerShape(32.dp),
+                                            spotColor = Color(0x30000000)
+                                        ),
+                                    shape = RoundedCornerShape(32.dp),
+                                    color = Color(0xFF1E1F24)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(horizontal = 8.dp),
+                                        horizontalArrangement = Arrangement.SpaceAround,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        BottomNavItems.forEach { screen ->
+                                            val isSelected = currentRoute == screen.route
+                                            if (isSelected) {
+                                                // Active Tab: Elevated Crisp White Pill
+                                                Surface(
+                                                    shape = RoundedCornerShape(22.dp),
+                                                    color = Color.White,
+                                                    shadowElevation = 4.dp
+                                                ) {
+                                                    Row(
+                                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = screen.icon,
+                                                            contentDescription = screen.title,
+                                                            tint = Color(0xFFE85B37),
+                                                            modifier = Modifier.size(18.dp)
+                                                        )
+                                                        Text(
+                                                            text = screen.title,
+                                                            fontSize = 12.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = Color(0xFF16171B)
+                                                        )
+                                                    }
+                                                }
+                                            } else {
+                                                // Inactive Tab: Clean White Icon
+                                                IconButton(
+                                                    onClick = {
+                                                        if (currentRoute != screen.route) {
+                                                            navController.navigate(screen.route) {
+                                                                popUpTo(Screen.Dashboard.route) { saveState = true }
+                                                                launchSingleTop = true
+                                                                restoreState = true
+                                                            }
+                                                        }
+                                                    }
+                                                ) {
+                                                    Icon(
+                                                        imageVector = screen.icon,
+                                                        contentDescription = screen.title,
+                                                        tint = Color.White.copy(alpha = 0.55f),
+                                                        modifier = Modifier.size(22.dp)
+                                                    )
                                                 }
                                             }
                                         }
-                                    )
+                                    }
                                 }
                             }
                         }

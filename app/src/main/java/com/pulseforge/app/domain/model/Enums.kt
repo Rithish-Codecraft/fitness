@@ -59,7 +59,7 @@ enum class ExperienceLevel(val label: String) {
 }
 
 enum class ThemePalette(val label: String, val subtitle: String) {
-    POWER("Whoop Volt", "Stealth Onyx & Bio-Volt (Whoop-Style)"),
+    POWER("Pulse Minimal", "Coral Terracotta & Soft Alabaster (Signature UI)"),
     FIRE("MacroFactor Amber", "Obsidian & Warm Coral (MacroFactor-Style)"),
     CALM("Oura Emerald", "Nordic Spruce & Champagne (Oura-Style)"),
     PEACE("Hevy Cobalt", "Electric Cobalt & Gym Slate (Hevy-Style)"),
