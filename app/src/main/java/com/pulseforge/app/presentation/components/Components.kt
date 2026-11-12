@@ -1984,3 +1984,433 @@ fun PremiumUpgradeCard(
         }
     }
 }
+
+/**
+ * Image 3: Motivational Lavender Gradient Banner ("Just a Little More to Go", 75%)
+ */
+@Composable
+fun LavenderMotivationBanner(
+    progressPct: Int = 75,
+    title: String = "Just a Little More to Go",
+    subtitle: String = "You're crushing it! Stay on track and keep moving!",
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(6.dp, RoundedCornerShape(24.dp), spotColor = Color(0x356C5CE7)),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(Color(0xFF6C5CE7), Color(0xFF8C7AE6))
+                    )
+                )
+                .padding(18.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Circular Progress Badge
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.22f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("⚡", fontSize = 11.sp)
+                        Text(
+                            text = "$progressPct%",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = subtitle,
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.9f),
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Image 3: Multi-Line Waveform Activity Performance Graph (810 kcal, 23% Than yesterday, 3 interwoven spline lines)
+ */
+@Composable
+fun MultiWaveformActivityGraphCard(
+    totalKcal: Int = 810,
+    increasePct: Int = 23,
+    walkingKcal: Int = 421,
+    runningKcal: Int = 109,
+    workoutKcal: Int = 280,
+    title: String = "Todays activity",
+    modifier: Modifier = Modifier
+) {
+    val total = (walkingKcal + runningKcal + workoutKcal).coerceAtLeast(1).toFloat()
+    val walkRatio = walkingKcal / total
+    val runRatio = runningKcal / total
+    val workoutRatio = workoutKcal / total
+
+    val walkColor = Color(0xFFA855F7)   // Purple
+    val runColor = Color(0xFF10B981)    // Green
+    val workoutColor = Color(0xFFFF6B35)// Radiant Orange
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(6.dp, RoundedCornerShape(26.dp), spotColor = Color(0x18000000)),
+        shape = RoundedCornerShape(26.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF16181F))
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            // Header Row: Flame Icon + Title + Chevron
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("🔥", fontSize = 13.sp)
+                    }
+                    Text(
+                        text = title,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+                Text(
+                    text = ">",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.5f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Big Numbers Row (810 kcal Total burned | 23% Than yesterday)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = "$totalKcal",
+                            fontSize = 30.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "kcal",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(bottom = 4.dp, start = 4.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("🔥", fontSize = 11.sp)
+                        Text(
+                            text = "Total burned",
+                            fontSize = 12.sp,
+                            color = Color.White.copy(alpha = 0.6f)
+                        )
+                    }
+                }
+
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "$increasePct%",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "↑ Than yesterday",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF10B981)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // Waveform Spline Chart with Y-Axis Labels
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+            ) {
+                // Y-Axis Labels
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(end = 8.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    listOf("1000", "500", "250", "0").forEach { label ->
+                        Text(
+                            text = label,
+                            fontSize = 10.sp,
+                            color = Color.White.copy(alpha = 0.35f),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                // Canvas Multi-Line Waveform
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val w = size.width
+                        val h = size.height
+
+                        // Horizontal subtle grid lines
+                        val gridLines = listOf(0.1f, 0.4f, 0.7f, 0.98f)
+                        gridLines.forEach { yRatio ->
+                            drawLine(
+                                color = Color.White.copy(alpha = 0.07f),
+                                start = Offset(0f, h * yRatio),
+                                end = Offset(w, h * yRatio),
+                                strokeWidth = 1.dp.toPx()
+                            )
+                        }
+
+                        // Data series points (normalized 0f to 1f)
+                        val walkPoints = listOf(0.2f, 0.35f, 0.28f, 0.65f, 0.45f, 0.85f, 0.35f, 0.48f, 0.6f)
+                        val runPoints = listOf(0.1f, 0.48f, 0.3f, 0.38f, 0.72f, 0.48f, 0.7f, 0.55f, 0.68f)
+                        val workoutPoints = listOf(0.15f, 0.25f, 0.52f, 0.4f, 0.8f, 0.75f, 0.52f, 0.78f, 0.85f)
+
+                        fun drawSpline(points: List<Float>, color: Color, strokeWidth: Float) {
+                            if (points.size < 2) return
+                            val path = androidx.compose.ui.graphics.Path()
+                            val stepX = w / (points.size - 1)
+                            path.moveTo(0f, h - (points[0] * h * 0.85f) - (h * 0.05f))
+
+                            for (i in 0 until points.size - 1) {
+                                val x0 = i * stepX
+                                val y0 = h - (points[i] * h * 0.85f) - (h * 0.05f)
+                                val x1 = (i + 1) * stepX
+                                val y1 = h - (points[i + 1] * h * 0.85f) - (h * 0.05f)
+                                val cx = (x0 + x1) / 2f
+                                path.cubicTo(cx, y0, cx, y1, x1, y1)
+                            }
+                            drawPath(
+                                path = path,
+                                color = color,
+                                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                            )
+                        }
+
+                        // Draw the 3 smooth interwoven curves
+                        drawSpline(walkPoints, walkColor, 3.dp.toPx())
+                        drawSpline(runPoints, runColor, 3.dp.toPx())
+                        drawSpline(workoutPoints, workoutColor, 3.dp.toPx())
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            // Horizontal Multi-Segmented Ratio Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(walkRatio)
+                        .fillMaxHeight()
+                        .background(walkColor)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Box(
+                    modifier = Modifier
+                        .weight(runRatio)
+                        .fillMaxHeight()
+                        .background(runColor)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Box(
+                    modifier = Modifier
+                        .weight(workoutRatio)
+                        .fillMaxHeight()
+                        .background(workoutColor)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 3-Column Activity Breakdown
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Column 1: Walking
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("🚶", fontSize = 11.sp)
+                        Text("Walking", fontSize = 11.sp, color = Color.White.copy(alpha = 0.6f))
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${walkingKcal}kcal",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                // Column 2: Running
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("🏃", fontSize = 11.sp)
+                        Text("Running", fontSize = 11.sp, color = Color.White.copy(alpha = 0.6f))
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${runningKcal}kcal",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                // Column 3: Workout
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("🏋️", fontSize = 11.sp)
+                        Text("Workout", fontSize = 11.sp, color = Color.White.copy(alpha = 0.6f))
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${workoutKcal}kcal",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Image 3: Quick Activity Selector Bar ("Start new activity" + Run, Yoga, Swim, Walk, Gym)
+ */
+@Composable
+fun StartNewActivityCard(
+    onSelectActivity: (String) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(4.dp, RoundedCornerShape(24.dp), spotColor = Color(0x18000000)),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF16181F))
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("⚡", fontSize = 12.sp)
+                    Text(
+                        text = "Start new activity",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+                Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.6f))
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            val activities = listOf(
+                Triple("Run", "🏃", Color(0xFFFF6B35)),
+                Triple("Yoga", "🧘", Color(0xFF10B981)),
+                Triple("Swim", "🏊", Color(0xFFF59E0B)),
+                Triple("Walk", "🚶", Color(0xFF8B5CF6)),
+                Triple("Gym", "🏋️", Color(0xFF3B82F6))
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                activities.forEach { (name, emoji, color) ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable { onSelectActivity(name) }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(color),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(emoji, fontSize = 20.sp)
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = name,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

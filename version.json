@@ -1,8 +1,8 @@
 {
-  "versionCode": 4,
-  "versionName": "1.3.0",
+  "versionCode": 5,
+  "versionName": "1.4.0",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Added Longevity Cyber Biometrics Suite (Obsidian, 60% Dual Arc, Heart Rate, Blood Pressure candles, ECG waveform, Walk session tags)\n• Added Macro Tachometer & Clean Wellness Suite (Semicircular radiating tachometer arch 1190/3000 KCAL, 3-macro underlines, water & heart dials, Today's Plan schedule)\n• Added 3D Hatched Weight Trend bar chart and continuous BMI health spectrum\n• Real-time one-tap theme switching across all 9 atmospheric palettes",
+  "releaseNotes": "• Added Mitchell Multi-Waveform Activity Graph (3 interwoven cubic spline liquid waveforms: Purple Walking, Green Running, Radiant Orange Workout)\n• Added Total Burned (810/970 kcal) & Comparison (+23% Than yesterday) hero metrics\n• Added horizontal multi-segmented ratio bar and 3-column activity breakdown (Walking, Running, Workout)\n• Added Motivational Lavender Banner ('Just a Little More to Go', 75%)\n• Added Quick Activity Launcher Bar ('Start new activity' with Run, Yoga, Swim, Walk, Gym)",
   "isMandatory": false,
   "minSupportedVersion": 1,
   "fileSizeBytes": 52835619,

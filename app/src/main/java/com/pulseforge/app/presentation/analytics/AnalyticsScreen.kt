@@ -87,6 +87,32 @@ fun AnalyticsScreen(
             )
         }
 
+        // Image 3: Motivational Lavender Progress Banner ("Just a Little More to Go", 75%)
+        item {
+            LavenderMotivationBanner(
+                progressPct = 75,
+                title = "Just a Little More to Go",
+                subtitle = "You're crushing it! Stay on track and keep moving!"
+            )
+        }
+
+        // Image 3: Primary Multi-Line Waveform Activity Performance Graph (810 kcal, 23% Than yesterday)
+        item {
+            MultiWaveformActivityGraphCard(
+                totalKcal = if (totalCaloriesBurned > 0) totalCaloriesBurned.toInt() else 810,
+                increasePct = 23,
+                walkingKcal = 421,
+                runningKcal = 109,
+                workoutKcal = 280,
+                title = "Todays activity"
+            )
+        }
+
+        // Image 3: Quick Start New Activity Selector Bar (Run, Yoga, Swim, Walk, Gym)
+        item {
+            StartNewActivityCard()
+        }
+
         // Image 2 Hatched Weight Trend Cylinder Bar Chart
         item {
             WeightTrendHatchedCard(

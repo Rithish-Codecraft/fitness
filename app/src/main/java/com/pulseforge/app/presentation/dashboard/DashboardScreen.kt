@@ -362,6 +362,17 @@ fun DashboardScreen(
                 item {
                     TodaysPlanSection(onSeeAllClick = onNavigateToNutrition)
                 }
+
+                item {
+                    MultiWaveformActivityGraphCard(
+                        totalKcal = 810,
+                        increasePct = 23,
+                        walkingKcal = 421,
+                        runningKcal = 109,
+                        workoutKcal = 280,
+                        title = "Todays activity"
+                    )
+                }
             }
         }
 
