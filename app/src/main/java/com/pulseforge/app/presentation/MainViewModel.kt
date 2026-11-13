@@ -40,7 +40,10 @@ data class MainUiState(
     val activeWorkoutInProgress: Boolean = false,
     val updateState: UpdateState = UpdateState.Idle,
     val updateManifestUrl: String = "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/version.json",
-    val sensorTelemetry: PhoneSensorTelemetry = PhoneSensorTelemetry()
+    val sensorTelemetry: PhoneSensorTelemetry = PhoneSensorTelemetry(),
+    val lifestyleSleepAnalysis: LifestyleSleepAnalysis = LifestyleSleepAnalysis(),
+    val storageStatus: StorageStatus = StorageStatus(),
+    val isCameraPermissionGranted: Boolean = false
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -48,6 +51,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = PulseForgeDatabase.getInstance(application)
     private val repository = PulseForgeRepositoryImpl(database)
     private val telemetryManager = com.pulseforge.app.core.telemetry.PhoneTelemetryManager(application)
+    private val lifestyleManager = com.pulseforge.app.core.lifestyle.LifestyleUsageManager(application)
+    private val storageManager = com.pulseforge.app.core.storage.PulseForgeStorageManager(application)
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -58,6 +63,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         observeReviews()
         refreshDashboardWidgets()
         observeSensorTelemetry()
+        refreshLifestyleAndSleep()
+        syncDataToPulseForgeStorage()
     }
 
     private fun observeSensorTelemetry() {
@@ -71,7 +78,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun triggerHardwareStepPulse(steps: Int = 10) {
         telemetryManager.addRealStepPulse(steps)
+        syncDataToPulseForgeStorage()
     }
+
+    fun refreshLifestyleAndSleep() {
+        viewModelScope.launch {
+            val analysis = lifestyleManager.analyzeLifestyleAndSleep()
+            _uiState.update { it.copy(lifestyleSleepAnalysis = analysis) }
+            syncDataToPulseForgeStorage()
+        }
+    }
+
+    fun syncDataToPulseForgeStorage() {
+        viewModelScope.launch {
+            val state = _uiState.value
+            val status = storageManager.exportAllUserData(
+                userProfile = state.userProfile,
+                dailyNutrition = state.dailyNutrition,
+                workoutSessions = state.workoutSessions,
+                sensorTelemetry = state.sensorTelemetry,
+                lifestyleSleepAnalysis = state.lifestyleSleepAnalysis
+            )
+            _uiState.update { it.copy(storageStatus = status) }
+        }
+    }
+
+    fun setCameraPermissionGranted(granted: Boolean) {
+        _uiState.update { it.copy(isCameraPermissionGranted = granted) }
+    }
+
+    fun getUsageAccessSettingsIntent() = lifestyleManager.createUsageAccessSettingsIntent()
 
     override fun onCleared() {
         super.onCleared()

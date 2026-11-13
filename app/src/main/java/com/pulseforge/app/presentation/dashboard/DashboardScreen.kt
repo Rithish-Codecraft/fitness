@@ -36,7 +36,11 @@ fun DashboardScreen(
     onNavigateToOnboarding: () -> Unit,
     onAddWater: (Int) -> Unit,
     onCheckForUpdates: () -> Unit = {},
-    onSimulateStepPulse: (() -> Unit)? = null
+    onSimulateStepPulse: (() -> Unit)? = null,
+    onOpenUsageSettings: () -> Unit = {},
+    onRefreshLifestyle: () -> Unit = {},
+    onSyncStorage: () -> Unit = {},
+    onRequestCamera: () -> Unit = {}
 ) {
     val extra = LocalExtraColors.current
     val profile = uiState.userProfile
@@ -118,6 +122,26 @@ fun DashboardScreen(
             LivePhoneSensorsTelemetryCard(
                 telemetry = uiState.sensorTelemetry,
                 onSimulateStepPulse = onSimulateStepPulse
+            )
+        }
+
+        // Dedicated User & App Data Directory Storage Card
+        item {
+            PulseForgeStorageCard(
+                storageStatus = uiState.storageStatus,
+                isCameraGranted = uiState.isCameraPermissionGranted,
+                hasUsageAccess = uiState.lifestyleSleepAnalysis.hasUsagePermission,
+                onSyncNow = onSyncStorage,
+                onRequestCamera = onRequestCamera
+            )
+        }
+
+        // Screen Time, App Usage & Nighttime Sleep Behavior Card
+        item {
+            LifestyleAndSleepCard(
+                analysis = uiState.lifestyleSleepAnalysis,
+                onOpenUsageSettings = onOpenUsageSettings,
+                onRefresh = onRefreshLifestyle
             )
         }
 

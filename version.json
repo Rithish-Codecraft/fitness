@@ -1,10 +1,10 @@
 {
-  "versionCode": 10,
-  "versionName": "1.6.1",
+  "versionCode": 11,
+  "versionName": "1.7.0",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Version 1.6 UI Purification: Complete replacement of mock reference screenshot elements with 100% real dynamic fitness UI.\n• Real Athlete Profile: Replaced fake social/mock cards with genuine athlete metrics, current weight, height, and direct workout actions.\n• Real Workout & Macro Pacing: Connected today's workout plan and daily macro budget cards with live Room database values.\n• 9-Stream Hardware Sensor Telemetry: Live step count, cadence, pace, distance, elevation, and sleep estimates from phone hardware.\n• Strict '-' Real-Data Integrity: Zero duplicate or synthetic values; unrecorded metrics display strictly as '-' across all cards and graphs.",
+  "releaseNotes": "• Dedicated Device Storage Directory: Automatically creates and maintains 'Documents/PulseForge AI/' on user device storing user profile, workouts, nutrition, and telemetry JSON files.\n• Real Screen Time & Nighttime App Usage: Real hardware usage telemetry extracting daily screen time, nighttime phone duration (10 PM - 6 AM), and top late-night apps to assess sleep latency.\n• Objective Sleep Window & Circadian Rhythm: Accurately deduces bedtime, wake time, and sleep disruption feedback from device inactivity.\n• Real 9-Stream Sensor Telemetry: Live step count, cadence, pace, distance, elevation, and active calories with strict '-' integrity.\n• Complete Device Capability Hub: Real-time status pills for storage readiness, camera permissions, hardware motion sensors, and usage stats access.",
   "isMandatory": false,
   "minSupportedVersion": 1,
-  "fileSizeBytes": 54241020,
-  "sha256": "A8574C30411427D742FC503AE2EC6F7601A037E1CCA178BBB9567EAD46E5E89E"
+  "fileSizeBytes": 54273996,
+  "sha256": "ADDB0E5D11B4FDA40B165A4F923D4EB044E58BF67E8E318C7A9370A8EBFEACAF"
 }

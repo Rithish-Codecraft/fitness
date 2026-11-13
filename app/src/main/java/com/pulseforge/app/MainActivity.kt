@@ -1,6 +1,9 @@
 package com.pulseforge.app
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,9 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -51,6 +56,8 @@ class MainActivity : ComponentActivity() {
             var pendingScanType by remember { mutableStateOf("PLATE") }
             var targetMealType by remember { mutableStateOf(MealType.LUNCH) }
 
+            val context = LocalContext.current
+
             val cameraLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.TakePicturePreview()
             ) { bitmap: Bitmap? ->
@@ -69,6 +76,37 @@ class MainActivity : ComponentActivity() {
                         viewModel.scanNutritionLabel(dummyBitmap, targetMealType)
                     }
                 }
+            }
+
+            val cameraPermissionLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission()
+            ) { isGranted ->
+                viewModel.setCameraPermissionGranted(isGranted)
+            }
+
+            val storagePermissionLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestMultiplePermissions()
+            ) { _ ->
+                viewModel.syncDataToPulseForgeStorage()
+            }
+
+            LaunchedEffect(Unit) {
+                val hasCam = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+                viewModel.setCameraPermissionGranted(hasCam)
+
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                    storagePermissionLauncher.launch(
+                        arrayOf(
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )
+                    )
+                }
+                viewModel.refreshLifestyleAndSleep()
+                viewModel.syncDataToPulseForgeStorage()
             }
 
             PulseForgeTheme(
@@ -182,7 +220,19 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToOnboarding = { navController.navigate(Screen.Onboarding.route) },
                                 onAddWater = { viewModel.addWater(it) },
                                 onCheckForUpdates = { viewModel.checkForUpdates() },
-                                onSimulateStepPulse = { viewModel.triggerHardwareStepPulse(25) }
+                                onSimulateStepPulse = { viewModel.triggerHardwareStepPulse(25) },
+                                onOpenUsageSettings = {
+                                    startActivity(viewModel.getUsageAccessSettingsIntent())
+                                },
+                                onRefreshLifestyle = {
+                                    viewModel.refreshLifestyleAndSleep()
+                                },
+                                onSyncStorage = {
+                                    viewModel.syncDataToPulseForgeStorage()
+                                },
+                                onRequestCamera = {
+                                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                }
                             )
                         }
 
@@ -264,6 +314,17 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val hasCam = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        viewModel.setCameraPermissionGranted(hasCam)
+        viewModel.refreshLifestyleAndSleep()
+        viewModel.syncDataToPulseForgeStorage()
     }
 }
 

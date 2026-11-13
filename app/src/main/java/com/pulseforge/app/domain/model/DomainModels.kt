@@ -208,3 +208,38 @@ data class SleepTelemetryEstimate(
     val deepSleepPct: Int? = null
 )
 
+/**
+ * Real App Usage & Lifestyle Telemetry
+ */
+data class AppUsageDetail(
+    val packageName: String,
+    val appName: String,
+    val totalTimeMinutes: Long,
+    val isNighttime: Boolean = false
+)
+
+data class LifestyleSleepAnalysis(
+    val dailyScreenTimeMinutes: Long = 0,
+    val nightScreenTimeMinutes: Long = 0,
+    val mostUsedNightApp: String = "-",
+    val mostUsedNightAppMinutes: Long = 0,
+    val topDayApps: List<AppUsageDetail> = emptyList(),
+    val estimatedBedtime: String = "-",
+    val estimatedWakeTime: String = "-",
+    val estimatedSleepDurationHours: Double? = null,
+    val sleepQualityScore: Int? = null, // e.g. 85 / 100
+    val sleepDisruptionFeedback: String = "",
+    val hasUsagePermission: Boolean = false
+)
+
+/**
+ * Dedicated PulseForge AI Device Storage & Data Directory Status
+ */
+data class StorageStatus(
+    val targetDirectoryPath: String = "",
+    val isDirectoryReady: Boolean = false,
+    val syncedFileCount: Int = 0,
+    val lastSyncTimestamp: String = "-",
+    val hasStoragePermission: Boolean = true
+)
+
