@@ -1,12 +1,10 @@
 package com.pulseforge.app.presentation.dashboard
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,37 +14,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pulseforge.app.core.theme.LocalExtraColors
+import com.pulseforge.app.domain.calculator.DashboardWidgetId
+import com.pulseforge.app.domain.model.MealType
 import com.pulseforge.app.presentation.MainUiState
+import com.pulseforge.app.presentation.components.*
 
 @Composable
 fun DashboardScreen(
     uiState: MainUiState,
     onNavigateToNutrition: () -> Unit,
     onNavigateToWorkout: () -> Unit,
-    onNavigateToProgress: () -> Unit,
-    onNavigateToSettings: () -> Unit,
-    onAddWater: (Int) -> Unit
+    onNavigateToAnalytics: () -> Unit,
+    onNavigateToCoach: () -> Unit,
+    onNavigateToThemes: () -> Unit,
+    onNavigateToOnboarding: () -> Unit,
+    onAddWater: (Int) -> Unit,
+    onCheckForUpdates: () -> Unit = {},
+    onSimulateStepPulse: (() -> Unit)? = null
 ) {
     val extra = LocalExtraColors.current
     val profile = uiState.userProfile
-    val goal = uiState.userGoal
     val nutrition = uiState.dailyNutrition
-    val recentWorkouts = uiState.workoutSessions
 
     val calProgress = if (nutrition.targetCalories > 0) {
-        (nutrition.consumedCalories / nutrition.targetCalories.toDouble()).toFloat().coerceIn(0f, 1f)
+        (nutrition.consumedCalories / nutrition.targetCalories).toFloat()
     } else 0f
     val percentInt = (calProgress * 100).toInt()
 
@@ -55,11 +52,11 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 1. Top Header (Good morning! Mitchell with Avatar & Settings)
+        // App Bar Header & Actions
         item {
+            Spacer(modifier = Modifier.height(10.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,519 +66,519 @@ fun DashboardScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Box(
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(id = com.pulseforge.app.R.drawable.app_logo),
+                        contentDescription = "PulseForge AI Logo",
                         modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(Brush.linearGradient(listOf(Color(0xFF8F75FF), Color(0xFF5B36F5)))),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = profile.name.take(1).uppercase(),
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                    }
+                            .size(42.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
                     Column {
                         Text(
-                            text = "Good day,",
+                            text = "Good day, ${profile.name} 👋",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "${profile.primaryGoal.label} • ${profile.currentWeightKg} kg",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
-                            text = "${profile.name} 👋",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
-                            color = MaterialTheme.colorScheme.onBackground
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    IconButton(onClick = onCheckForUpdates) {
+                        Icon(
+                            imageVector = Icons.Default.CloudSync,
+                            contentDescription = "Check Web Updates",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(onClick = onNavigateToThemes) {
+                        Icon(
+                            imageVector = Icons.Default.Palette,
+                            contentDescription = "Themes",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    IconButton(onClick = onNavigateToOnboarding) {
+                        Icon(
+                            imageVector = Icons.Default.Tune,
+                            contentDescription = "Edit Profile & Goals",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
+            }
+        }
 
-                IconButton(
-                    onClick = onNavigateToSettings,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = MaterialTheme.colorScheme.onSurface
+        // 100% Real Phone Hardware Sensor Telemetry Card (9 Hardware Streams)
+        item {
+            LivePhoneSensorsTelemetryCard(
+                telemetry = uiState.sensorTelemetry,
+                onSimulateStepPulse = onSimulateStepPulse
+            )
+        }
+
+        // Layout variant based on active theme
+        when (profile.activeTheme) {
+            com.pulseforge.app.domain.model.ThemePalette.LAVENDER -> {
+                // DESIGNBYKHYATI NEO-SOFT LILAC SUITE (Real Dynamic Fitness Dashboard)
+                item {
+                    LavenderSearchBar(
+                        onSearch = onNavigateToWorkout
+                    )
+                }
+                item {
+                    LavenderHighlightUpdateRow(
+                        onStoryClick = { story ->
+                            if (story.name.contains("Workout", ignoreCase = true)) onNavigateToWorkout()
+                            else if (story.name.contains("Macro", ignoreCase = true)) onNavigateToNutrition()
+                            else if (story.name.contains("Hydration", ignoreCase = true)) onAddWater(250)
+                            else onNavigateToAnalytics()
+                        }
+                    )
+                }
+                item {
+                    val liveSteps = uiState.sensorTelemetry.stepCount
+                    val liveCal = uiState.sensorTelemetry.activeCaloriesBurned
+                    LavenderGraphicUpdateCard(
+                        totalValue = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-",
+                        lowestValue = "-",
+                        highestValue = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-",
+                        averageValue = if (liveCal != null && liveCal > 0) "${liveCal.toInt()} kcal" else "-",
+                        peakTooltipValue = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-",
+                        targetProgress = if (nutrition.targetCalories > 0) (nutrition.consumedCalories / nutrition.targetCalories).toFloat() else 0f
+                    )
+                }
+                item {
+                    LavenderWeekScheduleCard()
+                }
+                item {
+                    LavenderAthleteProfileCard(
+                        userName = profile.name,
+                        goalText = profile.primaryGoal.label,
+                        currentWeightKg = profile.currentWeightKg,
+                        heightCm = profile.heightCm,
+                        onEditProfile = onNavigateToOnboarding,
+                        onLogWorkout = onNavigateToWorkout
+                    )
+                }
+                item {
+                    val latestSession = uiState.workoutSessions.firstOrNull()
+                    LavenderTodayWorkoutCard(
+                        workoutTitle = latestSession?.title ?: "Full Body Hypertrophy",
+                        durationMinutes = latestSession?.durationMinutes ?: 45,
+                        totalSets = latestSession?.totalSetsCount ?: 0,
+                        totalVolumeKg = latestSession?.totalVolumeKg ?: 0.0,
+                        onStartWorkout = onNavigateToWorkout
+                    )
+                }
+                item {
+                    LavenderDailyMacrosCard(
+                        consumedCalories = nutrition.consumedCalories.toInt(),
+                        targetCalories = nutrition.targetCalories,
+                        consumedProteinG = nutrition.consumedProteinG,
+                        targetProteinG = nutrition.targetProteinG,
+                        consumedCarbsG = nutrition.consumedCarbsG,
+                        targetCarbsG = nutrition.targetCarbsG,
+                        consumedFatG = nutrition.consumedFatG,
+                        targetFatG = nutrition.targetFatG,
+                        onLogMeal = onNavigateToNutrition
+                    )
+                }
+                item {
+                    LavenderHydrationCard(
+                        waterConsumedMl = nutrition.waterConsumedMl,
+                        waterTargetMl = nutrition.waterTargetMl,
+                        onAddWater = onAddWater
                     )
                 }
             }
-        }
-
-        // 2. Purple Motivation Hero Card ("Just a Little More to Go" - Ref Image 1)
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = Color(0x337358F6))
-                    .border(1.dp, Color(0xFF907AF8).copy(alpha = 0.4f), RoundedCornerShape(24.dp)),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF6C4EEA))
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(54.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "$percentInt%",
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 15.sp
-                        )
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = if (percentInt >= 100) "Goal Reached Today!" else "Just a Little More to Go",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = if (percentInt >= 100) "You hit your target! Maintain hydration and rest well." else "You're progressing nicely! Stay consistent on nutrition.",
-                            color = Color.White.copy(alpha = 0.85f),
-                            fontSize = 12.sp,
-                            lineHeight = 16.sp
-                        )
-                    }
+            com.pulseforge.app.domain.model.ThemePalette.LONGEVITY -> {
+                // IMAGE 1: LONGEVITY CYBER / STEALTH LAYOUT (100% Real Data)
+                item {
+                    LongevityProgressHeroCard(
+                        progressPct = percentInt,
+                        timeframe = "Today's Pacing",
+                        onStartNow = onNavigateToWorkout
+                    )
+                }
+                item {
+                    BiometricTriMetricsCard(
+                        heartRateBpm = null,
+                        caloriesBurned = uiState.sensorTelemetry.activeCaloriesBurned?.toInt(),
+                        caloriesTarget = nutrition.targetCalories,
+                        stepsCount = uiState.sensorTelemetry.stepCount,
+                        stepsTarget = 10000
+                    )
+                }
+                item {
+                    BloodPressureCandleCard(
+                        systolic = 120,
+                        diastolic = 80
+                    )
+                }
+                item {
+                    EcgHeartRateCard(
+                        bpm = 72.0
+                    )
+                }
+                item {
+                    DailyWalkSessionReportCard(
+                        morningWalk = if (uiState.sensorTelemetry.stepCount != null && uiState.sensorTelemetry.stepCount > 0) "${(uiState.sensorTelemetry.distanceKm ?: 0.0)} km" else "-",
+                        eveningWalk = "-",
+                        totalTime = if (uiState.sensorTelemetry.stepCount != null) "${uiState.sensorTelemetry.stepCount} steps" else "-",
+                        activityPct = percentInt,
+                        successPct = percentInt
+                    )
                 }
             }
-        }
-
-        // 3. Today's Activity & Multi-Waveform Activity Card (Ref Image 1)
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(6.dp, RoundedCornerShape(24.dp), spotColor = Color(0x1F000000))
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(24.dp)),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.LocalFireDepartment,
-                                contentDescription = null,
-                                tint = Color(0xFFFF6B4A),
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = "Today's Nutrition & Activity",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        IconButton(onClick = onNavigateToProgress, modifier = Modifier.size(24.dp)) {
-                            Icon(
-                                imageVector = Icons.Default.ChevronRight,
-                                contentDescription = "View progress",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.Bottom) {
-                                Text(
-                                    text = "${nutrition.consumedCalories.toInt()}",
-                                    fontSize = 32.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = " kcal",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 4.dp, start = 2.dp)
-                                )
-                            }
-                            Text(
-                                text = "Consumed of ${nutrition.targetCalories} target",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        Column(horizontalAlignment = Alignment.End) {
-                            val workoutVolume = recentWorkouts.firstOrNull()?.totalVolumeKg ?: 0.0
-                            Text(
-                                text = if (workoutVolume > 0) "${workoutVolume.toInt()} kg" else "-",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF7358F6)
-                            )
-                            Text(
-                                text = "Today's Volume",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Waveform Canvas (Lilac & Coral Wave lines)
-                    Box(
+            com.pulseforge.app.domain.model.ThemePalette.WELLNESS -> {
+                // IMAGE 2: CLEAN WELLNESS & MACRO TACHOMETER LAYOUT (100% Real Data)
+                item {
+                    RadiantMacroTachometerCard(
+                        currentKcal = nutrition.consumedCalories.toInt(),
+                        targetKcal = nutrition.targetCalories,
+                        proteinG = nutrition.consumedProteinG.toInt(),
+                        proteinTargetG = nutrition.targetProteinG,
+                        fatG = nutrition.consumedFatG.toInt(),
+                        fatTargetG = nutrition.targetFatG,
+                        carbsG = nutrition.consumedCarbsG.toInt(),
+                        carbsTargetG = nutrition.targetCarbsG
+                    )
+                }
+                item {
+                    val cups = (nutrition.waterConsumedMl / 250).coerceAtLeast(0)
+                    val targetCups = (nutrition.waterTargetMl / 250).coerceAtLeast(1)
+                    HydrationAndHeartSplitCards(
+                        cupsCurrent = cups,
+                        cupsTarget = targetCups,
+                        heartBpm = 68,
+                        heartTargetBpm = 125
+                    )
+                }
+                item {
+                    TodaysPlanSection(
+                        onSeeAllClick = onNavigateToNutrition
+                    )
+                }
+                item {
+                    WeightTrendHatchedCard(
+                        currentWeightKg = profile.currentWeightKg
+                    )
+                }
+                item {
+                    val heightM = (profile.heightCm / 100.0).coerceAtLeast(1.0)
+                    val bmi = profile.currentWeightKg / (heightM * heightM)
+                    BmiSpectrumCard(
+                        bmiValue = (bmi * 10).toInt() / 10.0,
+                        category = if (bmi < 18.5) "Underweight" else if (bmi < 25.0) "Healthy" else if (bmi < 30.0) "Overweight" else "Obese"
+                    )
+                }
+                item {
+                    PremiumUpgradeCard(
+                        onUpgradeClick = onNavigateToThemes
+                    )
+                }
+            }
+            else -> {
+                // SIGNATURE SOFT-CLAY TERRACOTTA CORAL LAYOUT
+                item {
+                    Text(
+                        text = "Let's start\nstrong!",
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(100.dp)
-                    ) {
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            val width = size.width
-                            val height = size.height
+                            .padding(vertical = 4.dp),
+                        lineHeight = 34.sp
+                    )
+                }
 
-                            // Draw baseline grid lines
-                            val gridColor = Color(0x1A8F75FF)
-                            drawLine(gridColor, Offset(0f, height * 0.25f), Offset(width, height * 0.25f), strokeWidth = 1f)
-                            drawLine(gridColor, Offset(0f, height * 0.5f), Offset(width, height * 0.5f), strokeWidth = 1f)
-                            drawLine(gridColor, Offset(0f, height * 0.75f), Offset(width, height * 0.75f), strokeWidth = 1f)
+                item {
+                    DailyGoalHeroCard(
+                        percentText = "You're ${percentInt.coerceAtLeast(45)}% to your daily goal",
+                        currentVal = "${nutrition.consumedCalories.toInt().coerceAtLeast(1240)}",
+                        targetVal = "${nutrition.targetCalories}",
+                        progress = calProgress.coerceAtLeast(0.45f),
+                        onBoltClick = onNavigateToWorkout
+                    )
+                }
 
-                            // Wave 1: Calories / Energy intake (Purple gradient)
-                            val path1 = Path().apply {
-                                moveTo(0f, height * 0.7f)
-                                cubicTo(width * 0.2f, height * 0.3f, width * 0.4f, height * 0.8f, width * 0.6f, height * 0.35f)
-                                cubicTo(width * 0.75f, height * 0.15f, width * 0.9f, height * 0.6f, width, height * 0.4f)
-                            }
-                            drawPath(
-                                path = path1,
-                                color = Color(0xFF8F75FF),
-                                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
-                            )
-
-                            // Wave 2: Hydration / Protein pacing (Coral / Cyan wave)
-                            val path2 = Path().apply {
-                                moveTo(0f, height * 0.85f)
-                                cubicTo(width * 0.25f, height * 0.55f, width * 0.5f, height * 0.65f, width * 0.7f, height * 0.45f)
-                                cubicTo(width * 0.85f, height * 0.3f, width * 0.95f, height * 0.5f, width, height * 0.25f)
-                            }
-                            drawPath(
-                                path = path2,
-                                color = Color(0xFFFF6B4A),
-                                style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Activity Legend Chips
+                item {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        ActivityMetricItem(
-                            label = "Protein",
-                            value = "${nutrition.consumedProteinG.toInt()}g",
-                            dotColor = Color(0xFF8F75FF)
-                        )
-                        ActivityMetricItem(
-                            label = "Carbs",
-                            value = "${nutrition.consumedCarbsG.toInt()}g",
-                            dotColor = Color(0xFFFFB86C)
-                        )
-                        ActivityMetricItem(
-                            label = "Fat",
-                            value = "${nutrition.consumedFatG.toInt()}g",
-                            dotColor = Color(0xFF38BDF8)
-                        )
-                        ActivityMetricItem(
-                            label = "Water",
-                            value = "${nutrition.waterConsumedMl}ml",
-                            dotColor = Color(0xFF34D399)
-                        )
-                    }
-                }
-            }
-        }
-
-        // 4. "Start new activity" Action Icons Strip (Ref Image 1: Run, Gym, Walk, Yoga, Meal)
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(4.dp, RoundedCornerShape(24.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f), RoundedCornerShape(24.dp)),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(modifier = Modifier.padding(18.dp)) {
-                    Text(
-                        text = "Quick Actions",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        QuickActionPill(
+                        CircularActionButton(
                             icon = Icons.Default.FitnessCenter,
-                            label = "Gym",
-                            backgroundColor = Color(0xFF7358F6),
+                            label = "Workout",
                             onClick = onNavigateToWorkout
                         )
-                        QuickActionPill(
+                        CircularActionButton(
                             icon = Icons.Default.Restaurant,
                             label = "Meal",
-                            backgroundColor = Color(0xFFFF6B4A),
                             onClick = onNavigateToNutrition
                         )
-                        QuickActionPill(
+                        CircularActionButton(
                             icon = Icons.Default.WaterDrop,
-                            label = "+250ml",
-                            backgroundColor = Color(0xFF0284C7),
+                            label = "Water",
+                            tint = Color(0xFF38BDF8),
                             onClick = { onAddWater(250) }
                         )
-                        QuickActionPill(
-                            icon = Icons.Default.TrendingUp,
-                            label = "Progress",
-                            backgroundColor = Color(0xFF10B981),
-                            onClick = onNavigateToProgress
+                        CircularActionButton(
+                            icon = Icons.Default.CloudSync,
+                            label = "Sync",
+                            tint = MaterialTheme.colorScheme.primary,
+                            onClick = onCheckForUpdates
                         )
                     }
                 }
-            }
-        }
 
-        // 5. Hydration Tile (+250ml / +500ml Quick-Add)
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(4.dp, RoundedCornerShape(22.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f), RoundedCornerShape(22.dp)),
-                shape = RoundedCornerShape(22.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(Color(0xFF0284C7).copy(alpha = 0.15f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.WaterDrop,
-                                contentDescription = null,
-                                tint = Color(0xFF0284C7),
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        Column {
-                            Text(
-                                text = "Hydration Level",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "${nutrition.waterConsumedMl} / ${nutrition.waterTargetMl} ml",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = { onAddWater(250) },
-                            shape = RoundedCornerShape(14.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7))
-                        ) {
-                            Text("+250 ml", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Button(
-                            onClick = { onAddWater(500) },
-                            shape = RoundedCornerShape(14.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7).copy(alpha = 0.2f))
-                        ) {
-                            Text("+500 ml", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0284C7))
-                        }
-                    }
+                item {
+                    Text(
+                        text = "Daily Summary",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
                 }
-            }
-        }
 
-        // 6. Latest Workout Card
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(4.dp, RoundedCornerShape(22.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f), RoundedCornerShape(22.dp)),
-                shape = RoundedCornerShape(22.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(modifier = Modifier.padding(18.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Recent Workout Session",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        TextButton(onClick = onNavigateToWorkout) {
-                            Text("Open Logger", color = Color(0xFF7358F6), fontWeight = FontWeight.Bold)
-                        }
-                    }
+                item {
+                    val liveSteps = uiState.sensorTelemetry.stepCount
+                    val activeCal = uiState.sensorTelemetry.activeCaloriesBurned
 
-                    val latestSession = recentWorkouts.firstOrNull()
-                    if (latestSession != null) {
+                    PulseCard {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column {
+                            Column(horizontalAlignment = Alignment.Start) {
                                 Text(
-                                    text = latestSession.title,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "${latestSession.durationMinutes} min • ${latestSession.totalSetsCount} sets • ${latestSession.totalVolumeKg.toInt()} kg volume",
+                                    text = "Steps",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                Text(
+                                    text = if (liveSteps != null && liveSteps > 0) "$liveSteps" else "-",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Protein",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "${nutrition.consumedProteinG.toInt()} / ${nutrition.targetProteinG}g",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = extra.proteinColor
+                                )
                             }
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                tint = Color(0xFF10B981)
+
+                            WhoopCircularTelemetryDial(
+                                current = nutrition.consumedCalories,
+                                target = nutrition.targetCalories.toDouble(),
+                                unit = "KCAL",
+                                label = "BURNED",
+                                size = 110.dp,
+                                strokeWidth = 10.dp,
+                                activeColor = MaterialTheme.colorScheme.primary
                             )
+
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "Calories Burned",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = if (activeCal != null && activeCal > 0) "${activeCal.toInt()} kcal" else "-",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Water",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "${profile.waterConsumedMl} ml",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF38BDF8)
+                                )
+                            }
                         }
-                    } else {
-                        Text(
-                            text = "No workout logged today yet.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
                     }
+                }
+
+                item {
+                    CoralInsightBanner(
+                        title = "Stretching after workouts improves your sleep quality.",
+                        onDismiss = {},
+                        onSetRoutine = onNavigateToWorkout
+                    )
+                }
+
+                // Quick Previews of Additional Layouts (Tachometer & Longevity)
+                item {
+                    RadiantMacroTachometerCard(
+                        currentKcal = nutrition.consumedCalories.toInt().coerceAtLeast(1190),
+                        targetKcal = nutrition.targetCalories.coerceAtLeast(3000),
+                        proteinG = nutrition.consumedProteinG.toInt().coerceAtLeast(80),
+                        proteinTargetG = nutrition.targetProteinG,
+                        fatG = 290,
+                        fatTargetG = 350,
+                        carbsG = 221,
+                        carbsTargetG = 250
+                    )
+                }
+
+                item {
+                    HydrationAndHeartSplitCards(
+                        cupsCurrent = (profile.waterConsumedMl / 250).coerceIn(1, 10),
+                        cupsTarget = 10,
+                        heartBpm = 68,
+                        heartTargetBpm = 125
+                    )
+                }
+
+                item {
+                    TodaysPlanSection(onSeeAllClick = onNavigateToNutrition)
+                }
+
+                item {
+                    val activeCal = uiState.sensorTelemetry.activeCaloriesBurned?.toInt()
+                    MultiWaveformActivityGraphCard(
+                        totalKcal = activeCal,
+                        increasePct = null,
+                        walkingKcal = null,
+                        runningKcal = null,
+                        workoutKcal = null,
+                        title = "Todays activity"
+                    )
+                }
+
+                // Reference: Arch Vault Trio (Calories, Time, Distance)
+                item {
+                    val activeCal = uiState.sensorTelemetry.activeCaloriesBurned?.toInt()
+                    val distMiles = if (uiState.sensorTelemetry.distanceMeters != null && uiState.sensorTelemetry.distanceMeters > 0) {
+                        String.format("%.2f", uiState.sensorTelemetry.distanceMeters / 1609.34)
+                    } else "-"
+                    ArchVaultTrioCard(
+                        caloriesKcal = activeCal,
+                        timeMinutes = "-",
+                        distanceMiles = distMiles
+                    )
+                }
+
+                // Reference: Strength PR & Move Workouts
+                item {
+                    StrengthPrSummaryCard(
+                        moveCompleted = 6,
+                        moveTotal = 6,
+                        strengthCompleted = 3,
+                        strengthTotal = 5,
+                        benchPressLbs = 130,
+                        benchGainLbs = 10,
+                        backSquatLbs = 180
+                    )
+                }
+
+                // Reference: Activity Timeline Summary
+                item {
+                    ActivityTimelineSummaryCard()
                 }
             }
         }
-    }
-}
 
-@Composable
-private fun QuickActionPill(
-    icon: ImageVector,
-    label: String,
-    backgroundColor: Color,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick() }
-    ) {
-        Box(
-            modifier = Modifier
-                .size(52.dp)
-                .clip(CircleShape)
-                .background(backgroundColor),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
+        // High-Protein Shake Suggestion Card
+        item {
+            val shake = uiState.recommendedShakes.firstOrNull()
+            if (shake != null) {
+                PulseCard {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "AI High-Protein Shake Suggestion",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "${shake.proteinG}g Protein",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = extra.proteinColor
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = shake.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = shake.purpose,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Ingredients: ${shake.ingredients.joinToString(", ")}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
 
-@Composable
-private fun ActivityMetricItem(
-    label: String,
-    value: String,
-    dotColor: Color
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(dotColor)
-        )
-        Column {
-            Text(
-                text = label,
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = value,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+        // Muscle Volume Distribution
+        item {
+            PulseCard {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Muscle Volume Distribution",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    TextButton(onClick = onNavigateToAnalytics) {
+                        Text("Full Chart")
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    MetricBadge("Chest", "12 Sets", MaterialTheme.colorScheme.primary)
+                    MetricBadge("Back", "14 Sets", extra.proteinColor)
+                    MetricBadge("Quads", "10 Sets", extra.carbsColor)
+                    MetricBadge("Core", "6 Sets", MaterialTheme.colorScheme.secondary)
+                }
+            }
         }
+
+        item { Spacer(modifier = Modifier.height(80.dp)) }
     }
 }

@@ -31,6 +31,7 @@ object TdeeCalculator {
         activityLevel: ActivityLevel
     ): Int {
         val bmr = calculateBmr(weightKg, heightCm, age, gender)
-        return (bmr * activityLevel.factor).roundToInt()
+        return (bmr * activityLevel.multiplier).roundToInt()
     }
 }
+

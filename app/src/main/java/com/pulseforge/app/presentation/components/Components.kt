@@ -481,7 +481,7 @@ fun HevySetTable(
                 Text("${set.setNumber}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(0.8f))
                 Text("${set.weightKg.toInt()} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1.2f))
                 Text("${set.reps}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-                Text("${set.volumeKg.toInt()} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = highlightColor, modifier = Modifier.weight(1.4f))
+                Text("${set.estimated1RmKg.toInt()} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = highlightColor, modifier = Modifier.weight(1.4f))
                 Box(
                     modifier = Modifier
                         .weight(0.8f)

@@ -1,27 +1,24 @@
 package com.pulseforge.app.presentation.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
-    object Home : Screen("home", "Home", Icons.Default.Home)
+    object Dashboard : Screen("dashboard", "Dashboard", Icons.Default.Dashboard)
     object Nutrition : Screen("nutrition", "Nutrition", Icons.Default.Restaurant)
     object Workout : Screen("workout", "Workout", Icons.Default.FitnessCenter)
-    object Progress : Screen("progress", "Progress", Icons.Default.TrendingUp)
-    object Settings : Screen("settings", "Settings", Icons.Default.Settings)
+    object Analytics : Screen("analytics", "Progress", Icons.Default.ShowChart)
+    object Coach : Screen("coach", "Coach", Icons.Default.AutoAwesome)
+    object Themes : Screen("themes", "Themes", Icons.Default.Palette)
     object Onboarding : Screen("onboarding", "Profile Setup", Icons.Default.Person)
 }
 
 val BottomNavItems = listOf(
-    Screen.Home,
+    Screen.Dashboard,
     Screen.Nutrition,
     Screen.Workout,
-    Screen.Progress,
-    Screen.Settings
+    Screen.Analytics,
+    Screen.Coach
 )
+
