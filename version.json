@@ -1,10 +1,10 @@
 {
-  "versionCode": 7,
-  "versionName": "1.6.0",
+  "versionCode": 8,
+  "versionName": "1.7.0",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Official Brand Logo & App Icon: High-res PulseForge AI athlete silhouette, metallic P glyph, glowing pulse, and dumbbell insignia integrated across the app icon, dashboard header, onboarding, and theme settings.\n• 100% Real Phone Hardware Sensor Telemetry Engine (9 Streams): Step Count, Step Cadence (SPM), Automatic Activity Detection (Still/Walk/Run/Cycle/Vehicle), Distance Traveled, Speed & Pace, GPS Routes, Elevation Gain & Floors Climbed (Barometer), MET Active Calories Burned, and Screen-off Sleep Estimates.\n• Strict Real-Data-Only Rule: All unrecorded or zero telemetry values displayed strictly as '-' across all cards and graphs with zero synthetic/duplicate values.\n• Real Data Graph Rendering: MultiWaveformActivityGraphCard, LavenderGraphicUpdateCard, SplitMetricsCards, BiometricTriMetricsCard, and ArchVaultTrioCard only render 100% authentic measured data with flatline resting baselines when idle.",
+  "releaseNotes": "• Complete 7-Category Mobile Health Data Hub: Seamless collection and dashboard synchronization of Activity & Motion, Exercise & Workouts, Location & Environmental, Body Metrics & Vitals, Sleep & Recovery, Nutrition & Hydration, and Cycle & Health Tracking.\n• Multi-Source Ingestion: Direct integration with Android SensorManager (hardware step & pressure sensors), LocationManager (GPS satellites), Health Connect permissions & query bridge, Camera PPG optical heart rate measurement, and Bluetooth smart peripherals.\n• Comprehensive Dashboard Sync: Real-time interactive Mobile Health Hub card on Dashboard and Analytics with Category Filter Pills (Motion, Workouts, Location, Vitals, Sleep, Nutrition, Cycle), one-tap 'Sync Now' synchronization, and live Camera PPG pulse measurement.\n• Strict Real-Data Integrity: Unrecorded or idle metrics displayed strictly as '-' with authentic flatline baselines on charts when inactive.",
   "isMandatory": false,
   "minSupportedVersion": 1,
-  "fileSizeBytes": 54241020,
-  "sha256": "81F628CBA7B30D4EEB574840965ACA1FCF1C3CA8F13BCB14F307CA280E6C4181"
+  "fileSizeBytes": 54274136,
+  "sha256": "7A151BBB3394556FCED2049F14D3D45BDA4788FD10EE0859B0B6119FF33300BD"
 }

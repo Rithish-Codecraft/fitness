@@ -31,7 +31,9 @@ enum class TimeHorizon(val label: String) {
 
 @Composable
 fun AnalyticsScreen(
-    uiState: MainUiState
+    uiState: MainUiState,
+    onSyncMobileHealthData: () -> Unit = {},
+    onMeasureHeartRate: () -> Unit = {}
 ) {
     val extra = LocalExtraColors.current
     var selectedHorizonIndex by remember { mutableStateOf(1) } // Weekly default
@@ -73,6 +75,15 @@ fun AnalyticsScreen(
         item {
             LivePhoneSensorsTelemetryCard(
                 telemetry = uiState.sensorTelemetry
+            )
+        }
+
+        // 7-Category Comprehensive Mobile Health Data Hub
+        item {
+            ComprehensiveMobileHealthSyncCard(
+                hub = uiState.mobileHealthHub,
+                onSyncAll = onSyncMobileHealthData,
+                onMeasurePulseViaCamera = onMeasureHeartRate
             )
         }
 

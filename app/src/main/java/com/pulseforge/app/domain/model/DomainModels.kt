@@ -204,3 +204,72 @@ data class SleepTelemetryEstimate(
     val deepSleepPct: Int? = null
 )
 
+/**
+ * 7-Category Comprehensive Mobile Health Data Hub Model
+ * Aggregates:
+ * 1. Activity & Motion Data (Steps, distance, speed, cadence, floors climbed, active/idle time)
+ * 2. Exercise & Workouts (Running, cycling, swimming, yoga, weightlifting, HIIT, duration, laps, GPS tracks)
+ * 3. Location & Environmental (Real-time & historical GPS, altitude, elevation gain, path mapping)
+ * 4. Body Metrics & Vitals (Weight, height, body fat %, lean body mass, bone mass, heart rate)
+ * 5. Sleep & Recovery (Duration, stages, movement stillness, readiness score)
+ * 6. Nutrition & Hydration (Calorie intake, water consumption, macros, logged meals)
+ * 7. Cycle & Health Tracking (Cycle day, phase, ovulation status, symptom notes)
+ */
+data class MobileHealthDataHub(
+    // 1. Activity & Motion Data
+    val stepCount: Long? = null,
+    val distanceMeters: Double? = null,
+    val speedKmh: Double? = null,
+    val cadenceSpm: Double? = null,
+    val floorsClimbed: Int? = null,
+    val activeMinutes: Int? = null,
+    val idleMinutes: Int? = null,
+
+    // 2. Exercise & Workouts
+    val workoutType: String = "-",
+    val workoutDurationMinutes: Int? = null,
+    val workoutLaps: Int? = null,
+    val workoutCaloriesBurned: Double? = null,
+    val workoutGpsWaypoints: List<GpsWaypoint> = emptyList(),
+
+    // 3. Location & Environmental Data
+    val currentGpsCoordinates: String = "-",
+    val currentAltitudeMeters: Double? = null,
+    val elevationGainMeters: Double? = null,
+    val outdoorRouteDescription: String = "-",
+
+    // 4. Body Metrics & Vitals
+    val weightKg: Double? = null,
+    val heightCm: Double? = null,
+    val bodyFatPct: Double? = null,
+    val leanBodyMassKg: Double? = null,
+    val boneMassKg: Double? = null,
+    val heartRateBpm: Int? = null,
+    val restingHeartRateBpm: Int? = null,
+    val heartRateMeasurementSource: String = "-",
+
+    // 5. Sleep & Recovery
+    val sleepDurationHours: Double? = null,
+    val sleepStagesSummary: String = "-",
+    val movementStillnessScore: Int? = null,
+    val recoveryReadinessScore: Int? = null,
+
+    // 6. Nutrition & Hydration
+    val caloriesConsumed: Double? = null,
+    val calorieTarget: Double? = null,
+    val waterConsumedMl: Int? = null,
+    val waterTargetMl: Int? = null,
+    val loggedMealsSummary: String = "-",
+
+    // 7. Cycle & Health Tracking
+    val cycleDay: Int? = null,
+    val cyclePhase: String = "-",
+    val ovulationStatus: String = "-",
+    val healthNotes: String = "-",
+
+    // Sync Metadata
+    val lastSyncTime: String = "Just now",
+    val healthConnectConnected: Boolean = true,
+    val companionSourcesConnected: List<String> = listOf("SensorManager", "GPS Provider", "Health Connect", "Camera PPG", "Smart Peripheral")
+)
+

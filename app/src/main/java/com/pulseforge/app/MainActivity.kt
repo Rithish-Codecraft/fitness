@@ -182,7 +182,9 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToOnboarding = { navController.navigate(Screen.Onboarding.route) },
                                 onAddWater = { viewModel.addWater(it) },
                                 onCheckForUpdates = { viewModel.checkForUpdates() },
-                                onSimulateStepPulse = { viewModel.triggerHardwareStepPulse(25) }
+                                onSimulateStepPulse = { viewModel.triggerHardwareStepPulse(25) },
+                                onSyncMobileHealthData = { viewModel.syncMobileHealthData() },
+                                onMeasureHeartRate = { viewModel.measureHeartRateViaCamera() }
                             )
                         }
 
@@ -220,7 +222,11 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(Screen.Analytics.route) {
-                            AnalyticsScreen(uiState = uiState)
+                            AnalyticsScreen(
+                                uiState = uiState,
+                                onSyncMobileHealthData = { viewModel.syncMobileHealthData() },
+                                onMeasureHeartRate = { viewModel.measureHeartRateViaCamera() }
+                            )
                         }
 
                         composable(Screen.Coach.route) {

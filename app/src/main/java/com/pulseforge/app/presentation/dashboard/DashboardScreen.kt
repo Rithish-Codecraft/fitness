@@ -36,7 +36,9 @@ fun DashboardScreen(
     onNavigateToOnboarding: () -> Unit,
     onAddWater: (Int) -> Unit,
     onCheckForUpdates: () -> Unit = {},
-    onSimulateStepPulse: (() -> Unit)? = null
+    onSimulateStepPulse: (() -> Unit)? = null,
+    onSyncMobileHealthData: () -> Unit = {},
+    onMeasureHeartRate: () -> Unit = {}
 ) {
     val extra = LocalExtraColors.current
     val profile = uiState.userProfile
@@ -124,6 +126,15 @@ fun DashboardScreen(
             LivePhoneSensorsTelemetryCard(
                 telemetry = uiState.sensorTelemetry,
                 onSimulateStepPulse = onSimulateStepPulse
+            )
+        }
+
+        // 7-Category Comprehensive Mobile Health Data Hub (Health Connect, Sensors, GPS, Vitals, PPG)
+        item {
+            ComprehensiveMobileHealthSyncCard(
+                hub = uiState.mobileHealthHub,
+                onSyncAll = onSyncMobileHealthData,
+                onMeasurePulseViaCamera = onMeasureHeartRate
             )
         }
 

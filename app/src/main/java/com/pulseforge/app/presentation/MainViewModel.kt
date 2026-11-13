@@ -40,7 +40,8 @@ data class MainUiState(
     val activeWorkoutInProgress: Boolean = false,
     val updateState: UpdateState = UpdateState.Idle,
     val updateManifestUrl: String = "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/version.json",
-    val sensorTelemetry: PhoneSensorTelemetry = PhoneSensorTelemetry()
+    val sensorTelemetry: PhoneSensorTelemetry = PhoneSensorTelemetry(),
+    val mobileHealthHub: MobileHealthDataHub = MobileHealthDataHub()
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -48,6 +49,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = PulseForgeDatabase.getInstance(application)
     private val repository = PulseForgeRepositoryImpl(database)
     private val telemetryManager = com.pulseforge.app.core.telemetry.PhoneTelemetryManager(application)
+    private val healthDataHubManager = com.pulseforge.app.core.telemetry.HealthDataHubManager(application, telemetryManager)
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -58,6 +60,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         observeReviews()
         refreshDashboardWidgets()
         observeSensorTelemetry()
+        observeHealthDataHub()
+    }
+
+    private fun observeHealthDataHub() {
+        viewModelScope.launch {
+            healthDataHubManager.hubState.collect { hub ->
+                _uiState.update { it.copy(mobileHealthHub = hub) }
+            }
+        }
+    }
+
+    fun syncMobileHealthData() {
+        healthDataHubManager.syncAllMobileHealthData(
+            profile = _uiState.value.userProfile,
+            dailyNutrition = _uiState.value.dailyNutrition,
+            recentWorkouts = _uiState.value.workoutSessions
+        )
+    }
+
+    fun measureHeartRateViaCamera() {
+        healthDataHubManager.performCameraPpgHeartRateMeasurement()
+    }
+
+    fun updateCycleHealth(cycleDay: Int, phase: String, notes: String) {
+        healthDataHubManager.updateCycleHealth(cycleDay, phase, notes)
     }
 
     private fun observeSensorTelemetry() {
