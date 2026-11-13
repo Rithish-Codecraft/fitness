@@ -1,10 +1,10 @@
 {
-  "versionCode": 8,
-  "versionName": "1.7.0",
+  "versionCode": 9,
+  "versionName": "1.8.0",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Complete 7-Category Mobile Health Data Hub: Seamless collection and dashboard synchronization of Activity & Motion, Exercise & Workouts, Location & Environmental, Body Metrics & Vitals, Sleep & Recovery, Nutrition & Hydration, and Cycle & Health Tracking.\n• Multi-Source Ingestion: Direct integration with Android SensorManager (hardware step & pressure sensors), LocationManager (GPS satellites), Health Connect permissions & query bridge, Camera PPG optical heart rate measurement, and Bluetooth smart peripherals.\n• Comprehensive Dashboard Sync: Real-time interactive Mobile Health Hub card on Dashboard and Analytics with Category Filter Pills (Motion, Workouts, Location, Vitals, Sleep, Nutrition, Cycle), one-tap 'Sync Now' synchronization, and live Camera PPG pulse measurement.\n• Strict Real-Data Integrity: Unrecorded or idle metrics displayed strictly as '-' with authentic flatline baselines on charts when inactive.",
+  "releaseNotes": "• PulseForge AI Lean MVP Architecture: 5 primary destinations (Home, Nutrition, Workout, Progress, Settings) with 7-entity Room local-first SQLite persistence.\n• 100% Real Verified Data: Zero speculative numbers or duplicate placeholders; unrecorded data displays as '-'.\n• Refined Visual System: Neo-Soft Lilac and Dark Obsidian styling matching user references with smooth wave charts and peak callout tooltips.\n• Lean & Lightweight: Eliminated heavy OCR/ML bloat, reducing APK footprint from 54MB to 11.9MB.\n• Complete Data Portability: One-tap local JSON backup and zero cloud dependencies.",
   "isMandatory": false,
   "minSupportedVersion": 1,
-  "fileSizeBytes": 54274136,
-  "sha256": "7A151BBB3394556FCED2049F14D3D45BDA4788FD10EE0859B0B6119FF33300BD"
+  "fileSizeBytes": 11988775,
+  "sha256": "3A39764B1983CE6C29AC4B5B7C6960D64F07F5D07731E5DBCAD236E188FE77EA"
 }

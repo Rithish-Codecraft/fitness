@@ -4,29 +4,29 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.pulseforge.app.data.local.dao.NutritionDao
-import com.pulseforge.app.data.local.dao.ReviewDao
-import com.pulseforge.app.data.local.dao.UserDao
-import com.pulseforge.app.data.local.dao.WorkoutDao
+import com.pulseforge.app.data.local.dao.*
 import com.pulseforge.app.data.local.entity.*
 
 @Database(
     entities = [
         UserProfileEntity::class,
-        FoodItemEntity::class,
+        UserGoalEntity::class,
+        MealEntryEntity::class,
         WorkoutSessionEntity::class,
-        ExerciseLogEntity::class,
         ExerciseSetEntity::class,
-        ProgressReviewEntity::class
+        BodyMeasurementEntity::class,
+        AppSettingsEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class PulseForgeDatabase : RoomDatabase() {
-    abstract fun userDao(): UserDao
-    abstract fun nutritionDao(): NutritionDao
+    abstract fun userProfileDao(): UserProfileDao
+    abstract fun userGoalDao(): UserGoalDao
+    abstract fun mealEntryDao(): MealEntryDao
     abstract fun workoutDao(): WorkoutDao
-    abstract fun reviewDao(): ReviewDao
+    abstract fun bodyMeasurementDao(): BodyMeasurementDao
+    abstract fun appSettingsDao(): AppSettingsDao
 
     companion object {
         @Volatile
@@ -47,4 +47,3 @@ abstract class PulseForgeDatabase : RoomDatabase() {
         }
     }
 }
-

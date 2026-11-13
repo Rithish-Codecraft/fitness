@@ -5,74 +5,99 @@ import com.pulseforge.app.data.local.entity.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface UserDao {
+interface UserProfileDao {
     @Query("SELECT * FROM user_profile LIMIT 1")
     fun getUserProfile(): Flow<UserProfileEntity?>
 
-    @Query("SELECT * FROM user_profile LIMIT 1")
-    suspend fun getUserProfileOnce(): UserProfileEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdateProfile(profile: UserProfileEntity)
+    suspend fun insertProfile(profile: UserProfileEntity)
 
-    @Query("UPDATE user_profile SET waterConsumedMl = :consumed WHERE id = :userId")
-    suspend fun updateWater(userId: String, consumed: Int)
-
-    @Query("UPDATE user_profile SET activeTheme = :theme, isDarkMode = :isDark WHERE id = :userId")
-    suspend fun updateTheme(userId: String, theme: String, isDark: Boolean)
+    @Update
+    suspend fun updateProfile(profile: UserProfileEntity)
 }
 
 @Dao
-interface NutritionDao {
-    @Query("SELECT * FROM food_items WHERE date = :date")
-    fun getFoodItemsForDate(date: String): Flow<List<FoodItemEntity>>
+interface UserGoalDao {
+    @Query("SELECT * FROM user_goal LIMIT 1")
+    fun getUserGoal(): Flow<UserGoalEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFoodItem(item: FoodItemEntity)
+    suspend fun insertGoal(goal: UserGoalEntity)
+
+    @Update
+    suspend fun updateGoal(goal: UserGoalEntity)
+}
+
+@Dao
+interface MealEntryDao {
+    @Query("SELECT * FROM meal_entries WHERE date = :date ORDER BY slot ASC")
+    fun getMealsForDate(date: String): Flow<List<MealEntryEntity>>
+
+    @Query("SELECT * FROM meal_entries ORDER BY date DESC")
+    fun getAllMeals(): Flow<List<MealEntryEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFoodItems(items: List<FoodItemEntity>)
+    suspend fun insertMeal(meal: MealEntryEntity)
 
     @Delete
-    suspend fun deleteFoodItem(item: FoodItemEntity)
+    suspend fun deleteMeal(meal: MealEntryEntity)
 
-    @Query("DELETE FROM food_items WHERE id = :id")
-    suspend fun deleteFoodItemById(id: String)
+    @Query("DELETE FROM meal_entries WHERE id = :id")
+    suspend fun deleteMealById(id: String)
 }
+
+data class WorkoutSessionWithSets(
+    @Embedded val session: WorkoutSessionEntity,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "sessionId"
+    )
+    val sets: List<ExerciseSetEntity>
+)
 
 @Dao
 interface WorkoutDao {
-    @Query("SELECT * FROM workout_sessions ORDER BY date DESC")
-    fun getAllWorkoutSessions(): Flow<List<WorkoutSessionEntity>>
+    @Transaction
+    @Query("SELECT * FROM workout_sessions ORDER BY date DESC, createdAt DESC")
+    fun getAllWorkouts(): Flow<List<WorkoutSessionWithSets>>
 
-    @Query("SELECT * FROM workout_sessions WHERE date = :date LIMIT 1")
-    suspend fun getSessionByDate(date: String): WorkoutSessionEntity?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkoutSession(session: WorkoutSessionEntity)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertExerciseLog(exercise: ExerciseLogEntity)
+    @Transaction
+    @Query("SELECT * FROM workout_sessions WHERE id = :sessionId LIMIT 1")
+    suspend fun getWorkoutById(sessionId: String): WorkoutSessionWithSets?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertExerciseSets(sets: List<ExerciseSetEntity>)
+    suspend fun insertSession(session: WorkoutSessionEntity)
 
-    @Query("SELECT * FROM exercise_logs WHERE workoutSessionId = :sessionId")
-    suspend fun getExercisesForSession(sessionId: String): List<ExerciseLogEntity>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSets(sets: List<ExerciseSetEntity>)
 
-    @Query("SELECT * FROM exercise_sets WHERE exerciseLogId = :exerciseLogId")
-    suspend fun getSetsForExercise(exerciseLogId: String): List<ExerciseSetEntity>
+    @Transaction
+    suspend fun insertFullWorkout(session: WorkoutSessionEntity, sets: List<ExerciseSetEntity>) {
+        insertSession(session)
+        insertSets(sets)
+    }
 
-    @Query("SELECT MAX(estimated1RmKg) FROM exercise_sets WHERE exerciseLogId IN (SELECT id FROM exercise_logs WHERE exerciseName = :exerciseName)")
-    suspend fun getBestEstimated1Rm(exerciseName: String): Double?
+    @Query("DELETE FROM workout_sessions WHERE id = :sessionId")
+    suspend fun deleteSessionById(sessionId: String)
 }
 
 @Dao
-interface ReviewDao {
-    @Query("SELECT * FROM progress_reviews ORDER BY weekNumber DESC")
-    fun getAllReviews(): Flow<List<ProgressReviewEntity>>
+interface BodyMeasurementDao {
+    @Query("SELECT * FROM body_measurements ORDER BY date DESC")
+    fun getAllMeasurements(): Flow<List<BodyMeasurementEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertReview(review: ProgressReviewEntity)
+    suspend fun insertMeasurement(measurement: BodyMeasurementEntity)
+
+    @Delete
+    suspend fun deleteMeasurement(measurement: BodyMeasurementEntity)
 }
 
+@Dao
+interface AppSettingsDao {
+    @Query("SELECT * FROM app_settings WHERE id = 'default_settings' LIMIT 1")
+    fun getSettings(): Flow<AppSettingsEntity?>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdate(settings: AppSettingsEntity)
+}

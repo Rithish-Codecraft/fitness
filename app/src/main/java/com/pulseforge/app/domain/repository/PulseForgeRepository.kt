@@ -4,20 +4,34 @@ import com.pulseforge.app.domain.model.*
 import kotlinx.coroutines.flow.Flow
 
 interface PulseForgeRepository {
+    // User Profile
     fun getUserProfile(): Flow<UserProfile?>
     suspend fun saveUserProfile(profile: UserProfile)
-    suspend fun updateWater(userId: String, consumedMl: Int)
-    suspend fun updateTheme(userId: String, theme: ThemePalette, isDarkMode: Boolean)
 
-    fun getDailyNutrition(date: String, targetCalories: Int, targetProteinG: Int, targetCarbsG: Int, targetFatG: Int): Flow<DailyNutrition>
-    suspend fun addFoodItem(item: FoodItem)
-    suspend fun addFoodItems(items: List<FoodItem>)
-    suspend fun deleteFoodItem(id: String)
+    // User Goal
+    fun getUserGoal(): Flow<UserGoal?>
+    suspend fun saveUserGoal(goal: UserGoal)
+    suspend fun addWater(amountMl: Int)
 
-    fun getAllWorkoutSessions(): Flow<List<WorkoutSession>>
-    suspend fun logWorkoutSession(session: WorkoutSession)
+    // Nutrition
+    fun getMealsForDate(date: String): Flow<List<MealEntry>>
+    fun getAllMeals(): Flow<List<MealEntry>>
+    suspend fun addMeal(meal: MealEntry)
+    suspend fun deleteMeal(id: String)
 
-    fun getAllReviews(): Flow<List<WeeklyProgressReview>>
-    suspend fun saveReview(review: WeeklyProgressReview)
+    // Workouts
+    fun getAllWorkouts(): Flow<List<WorkoutSession>>
+    suspend fun saveWorkout(session: WorkoutSession)
+    suspend fun deleteWorkout(id: String)
+
+    // Body Measurements
+    fun getAllMeasurements(): Flow<List<BodyMeasurement>>
+    suspend fun addMeasurement(measurement: BodyMeasurement)
+
+    // Settings
+    fun getSettings(): Flow<AppSettings>
+    suspend fun saveSettings(settings: AppSettings)
+
+    // Data Export
+    suspend fun exportDataAsJson(): String
 }
-

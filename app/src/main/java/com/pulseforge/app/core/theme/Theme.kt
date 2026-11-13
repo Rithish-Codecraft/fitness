@@ -77,24 +77,6 @@ fun PulseForgeTheme(
             if (isDarkMode) PulseThemeColors.WellnessDarkScheme to PulseThemeColors.WellnessExtraDark
             else PulseThemeColors.WellnessLightScheme to PulseThemeColors.WellnessExtraLight
         }
-        ThemePalette.FIRE -> {
-            if (isDarkMode) PulseThemeColors.FireDarkScheme to PulseThemeColors.FireExtraDark
-            else lightColorScheme(
-                primary = PulseThemeColors.FireDarkScheme.primary,
-                background = PulseThemeColors.PowerLightScheme.background,
-                surface = PulseThemeColors.PowerLightScheme.surface,
-                onBackground = PulseThemeColors.PowerLightScheme.onBackground,
-                onSurface = PulseThemeColors.PowerLightScheme.onSurface
-            ) to PulseThemeColors.FireExtraDark.copy(
-                cardBackground = PulseThemeColors.PowerExtraLight.cardBackground,
-                cardBorder = PulseThemeColors.PowerExtraLight.cardBorder
-            )
-        }
-        ThemePalette.CALM -> PulseThemeColors.CalmDarkScheme to PulseThemeColors.CalmExtraDark
-        ThemePalette.PEACE -> PulseThemeColors.PeaceDarkScheme to PulseThemeColors.PeaceExtraDark
-        ThemePalette.WARM -> PulseThemeColors.WarmDarkScheme to PulseThemeColors.WarmExtraDark
-        ThemePalette.MOOD -> PulseThemeColors.MoodDarkScheme to PulseThemeColors.MoodExtraDark
-        ThemePalette.LIGHT -> PulseThemeColors.LightScheme to PulseThemeColors.LightExtra
     }
 
     CompositionLocalProvider(LocalExtraColors provides extraColors) {

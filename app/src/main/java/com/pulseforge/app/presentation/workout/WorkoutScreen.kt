@@ -5,8 +5,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -14,498 +17,457 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.pulseforge.app.core.theme.LocalExtraColors
-import com.pulseforge.app.domain.calculator.OneRepMaxCalculator
-import com.pulseforge.app.domain.model.*
+import com.pulseforge.app.domain.model.ExerciseSet
+import com.pulseforge.app.domain.model.MuscleGroup
+import com.pulseforge.app.domain.model.WorkoutSession
 import com.pulseforge.app.presentation.MainUiState
-import com.pulseforge.app.presentation.components.*
+import kotlinx.coroutines.delay
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutScreen(
     uiState: MainUiState,
-    onLogWorkout: (String, Int, List<ExerciseLog>, String) -> Unit
+    onSaveWorkout: (String, Int, String, List<ExerciseSet>) -> Unit,
+    onDeleteWorkout: (String) -> Unit
 ) {
-    val extra = LocalExtraColors.current
-    var isLoggingNewSession by remember { mutableStateOf(false) }
-
-    // State for creating a new workout session
-    var sessionTitle by remember { mutableStateOf("Hypertrophy Push & Lats Session") }
-    var durationMinutes by remember { mutableStateOf("60") }
+    var workoutTitle by remember { mutableStateOf("Strength Session") }
+    var durationMinutes by remember { mutableStateOf("45") }
     var sessionNotes by remember { mutableStateOf("") }
-    val currentExercises = remember { mutableStateListOf<ExerciseLog>() }
 
-    // Dialog state for adding an exercise to the active session
-    var showAddExerciseDialog by remember { mutableStateOf(false) }
-    var exerciseName by remember { mutableStateOf("Incline Dumbbell Press") }
-    var selectedMuscle by remember { mutableStateOf(MuscleGroup.CHEST) }
-    var selectedEquipment by remember { mutableStateOf(EquipmentType.DUMBBELL) }
-    var machineSettings by remember { mutableStateOf("Seat Notch 3, 30° Incline") }
+    // Active session sets in progress
+    val activeSets = remember { mutableStateListOf<ExerciseSet>() }
+    var currentExerciseName by remember { mutableStateOf("Barbell Bench Press") }
+    var currentMuscleGroup by remember { mutableStateOf(MuscleGroup.CHEST) }
+    var inputWeight by remember { mutableStateOf("60") }
+    var inputReps by remember { mutableStateOf("10") }
+    var inputRpe by remember { mutableStateOf("8.0") }
+
+    // Rest timer state
+    var restTimerSeconds by remember { mutableStateOf(0) }
+    var isTimerRunning by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isTimerRunning) {
+        while (isTimerRunning && restTimerSeconds > 0) {
+            delay(1000)
+            restTimerSeconds -= 1
+        }
+        if (restTimerSeconds <= 0) {
+            isTimerRunning = false
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
+            .padding(horizontal = 20.dp),
+        contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // 1. Header
         item {
-            SectionHeader(
-                title = "Workout & Equipment Logger",
-                subtitle = "Track sets, reps, pin/plate weights, 1RM, and kcal burned"
-            ) {
-                Button(
-                    onClick = { isLoggingNewSession = !isLoggingNewSession },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(if (isLoggingNewSession) Icons.Default.Close else Icons.Default.Add, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(if (isLoggingNewSession) "Cancel" else "New Workout")
-                }
-            }
-        }
-
-        // Reference: Muscle Group Filter Bar (from reference KJ93mTngMB.jpg)
-        item {
-            MuscleGroupFilterBar()
-        }
-
-        // Reference: Elite Workout Set Table Card (from reference KJ93mTngMB.jpg)
-        item {
-            WorkoutSetTableCard(
-                exerciseName = "Incline Bench Press",
-                muscles = "Chest • Triceps • Shoulders",
-                sets = listOf(
-                    ExerciseSetRow(1, 40.0, 8, "Warmup"),
-                    ExerciseSetRow(2, 55.0, 8, "Normal"),
-                    ExerciseSetRow(3, 60.0, 4, "Heavy"),
-                    ExerciseSetRow(4, 50.0, 10, "Light")
-                ),
-                onAddSet = { isLoggingNewSession = true }
+            Text(
+                text = "Workout Logger",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = "Log progressive overload, weights, reps, and RPE",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
-        // Active Session Creation Card
-        if (isLoggingNewSession) {
-            item {
-                PulseCard(borderGlow = true) {
+        // 2. Active Session Card
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(6.dp, RoundedCornerShape(24.dp), spotColor = Color(0x1F000000))
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(24.dp)),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        text = "Active Workout Session",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        text = "Active Session Setup",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedTextField(
-                            value = sessionTitle,
-                            onValueChange = { sessionTitle = it },
+                            value = workoutTitle,
+                            onValueChange = { workoutTitle = it },
                             label = { Text("Workout Title") },
                             modifier = Modifier.weight(2f)
                         )
                         OutlinedTextField(
                             value = durationMinutes,
                             onValueChange = { durationMinutes = it },
-                            label = { Text("Mins") },
+                            label = { Text("Duration (min)") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.weight(1f)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = sessionNotes,
+                        onValueChange = { sessionNotes = it },
+                        label = { Text("Session Notes / Intensity focus") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                    // List of exercises in current session
-                    currentExercises.forEachIndexed { index, exercise ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
+                    // Exercise set input section
+                    Text(
+                        text = "Add Exercise Set",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    OutlinedTextField(
+                        value = currentExerciseName,
+                        onValueChange = { currentExerciseName = it },
+                        label = { Text("Exercise Name") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Muscle Group Chips
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        items(MuscleGroup.values()) { group ->
+                            FilterChip(
+                                selected = currentMuscleGroup == group,
+                                onClick = { currentMuscleGroup = group },
+                                label = { Text(group.label.take(8), fontSize = 11.sp) }
+                            )
+                        }
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = inputWeight,
+                            onValueChange = { inputWeight = it },
+                            label = { Text("Weight (kg)") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = inputReps,
+                            onValueChange = { inputReps = it },
+                            label = { Text("Reps") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = inputRpe,
+                            onValueChange = { inputRpe = it },
+                            label = { Text("RPE (1-10)") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            if (currentExerciseName.isNotBlank()) {
+                                val w = inputWeight.toDoubleOrNull() ?: 0.0
+                                val r = inputReps.toIntOrNull() ?: 1
+                                val rpeVal = inputRpe.toDoubleOrNull() ?: 8.0
+                                activeSets.add(
+                                    ExerciseSet(
+                                        sessionId = "",
+                                        exerciseName = currentExerciseName,
+                                        muscleGroup = currentMuscleGroup.label,
+                                        setNumber = activeSets.size + 1,
+                                        weightKg = w,
+                                        reps = r,
+                                        rpe = rpeVal
+                                    )
+                                )
+                                // Auto start rest timer
+                                restTimerSeconds = 90
+                                isTimerRunning = true
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7358F6))
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Log Set (${activeSets.size + 1})")
+                    }
+
+                    // Display active sets table
+                    if (activeSets.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Logged Sets for this session (${activeSets.size})",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        activeSets.forEachIndexed { index, set ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "#${index + 1} ${set.exerciseName}",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    Column {
-                                        Text(exercise.exerciseName, fontWeight = FontWeight.Bold)
-                                        Text(
-                                            text = "${exercise.muscleGroup.label} • ${exercise.equipmentType.label}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                        if (exercise.machineSettings.isNotBlank()) {
-                                            Text(
-                                                text = "Settings: ${exercise.machineSettings}",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                    IconButton(onClick = { currentExercises.removeAt(index) }) {
-                                        Icon(Icons.Default.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error)
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
-                                // Sets summary
-                                exercise.sets.forEach { s ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    Text(
+                                        text = "${set.weightKg}kg × ${set.reps} (RPE ${set.rpe})",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    IconButton(
+                                        onClick = { activeSets.removeAt(index) },
+                                        modifier = Modifier.size(24.dp)
                                     ) {
-                                        Text("Set ${s.setNumber}: ${s.weightKg} kg × ${s.reps} reps", style = MaterialTheme.typography.bodySmall)
-                                        Text("Est. 1RM: ${String.format("%.1f", s.estimated1RmKg)} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = extra.proteinColor)
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = "Remove set",
+                                            modifier = Modifier.size(14.dp),
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
                                     }
                                 }
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(
-                            onClick = { showAddExerciseDialog = true },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Add Exercise")
-                        }
-
+                        // Complete & Save Workout Button
                         Button(
                             onClick = {
                                 val dur = durationMinutes.toIntOrNull() ?: 45
-                                if (currentExercises.isNotEmpty()) {
-                                    onLogWorkout(sessionTitle, dur, currentExercises.toList(), sessionNotes)
-                                    currentExercises.clear()
-                                    isLoggingNewSession = false
-                                }
+                                onSaveWorkout(workoutTitle, dur, sessionNotes, activeSets.toList())
+                                activeSets.clear()
+                                sessionNotes = ""
+                                isTimerRunning = false
+                                restTimerSeconds = 0
                             },
-                            modifier = Modifier.weight(1f),
-                            enabled = currentExercises.isNotEmpty()
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
                         ) {
-                            Text("Save Workout")
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Complete & Save Session to Room")
                         }
                     }
                 }
             }
         }
 
-        // Hevy-Style Workout Performance Hero Banner
+        // 3. Rest Timer Card
         item {
-            val totalTonnage = uiState.workoutSessions.sumOf { it.totalVolumeKg } / 1000.0
-            val totalKcal = uiState.workoutSessions.sumOf { it.kcalBurned }
-            PulseCard(borderGlow = true) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(3.dp, RoundedCornerShape(20.dp)),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
                         Text(
-                            text = "Weekly Training Load",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            text = "Rest Timer",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Resistance tonnage & EPOC energy expenditure",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = if (restTimerSeconds > 0) "${restTimerSeconds}s remaining" else "Ready for next set",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black,
+                            color = if (isTimerRunning) Color(0xFF7358F6) else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "${uiState.workoutSessions.size} SESSIONS",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Button(
+                            onClick = {
+                                restTimerSeconds = 60
+                                isTimerRunning = true
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Text("60s", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
+                        }
+                        Button(
+                            onClick = {
+                                restTimerSeconds = 90
+                                isTimerRunning = true
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Text("90s", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
+                        }
+                        Button(
+                            onClick = {
+                                restTimerSeconds = 120
+                                isTimerRunning = true
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Text("120s", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
+                        }
                     }
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    MetricBadge(
-                        label = "Tonnage",
-                        value = "${String.format("%.1f", totalTonnage)}t",
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    MetricBadge(
-                        label = "Burned",
-                        value = "${totalKcal.toInt()} kcal",
-                        color = extra.calorieRing
-                    )
-                    MetricBadge(
-                        label = "Top 1RM",
-                        value = "87 kg",
-                        color = extra.proteinColor
-                    )
                 }
             }
         }
 
-        // Past Logged Sessions
+        // 4. Workout History Header
         item {
             Text(
-                text = "Past Workout Sessions",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                text = "Logged Workout History",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
-        items(uiState.workoutSessions) { session ->
-            PulseCard {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+        // 5. Workout Sessions List
+        if (uiState.workoutSessions.isEmpty()) {
+            item {
+                Text(
+                    text = "No saved workouts yet. Log your first session above.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            items(uiState.workoutSessions) { session ->
+                WorkoutHistoryCard(session = session, onDelete = { onDeleteWorkout(session.id) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorkoutHistoryCard(
+    session: WorkoutSession,
+    onDelete: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(3.dp, RoundedCornerShape(20.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f), RoundedCornerShape(20.dp)),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = session.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "${session.date} • ${session.durationMinutes} min",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = session.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            text = "${session.totalVolumeKg.toInt()} kg",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = Color(0xFF7358F6)
                         )
                         Text(
-                            text = "${session.date} • ${session.durationMinutes} mins",
-                            style = MaterialTheme.typography.bodySmall,
+                            text = "${session.totalSetsCount} sets",
+                            fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(extra.calorieRing.copy(alpha = 0.12f))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "${session.kcalBurned.toInt()} kcal",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = extra.calorieRing
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "${String.format("%.1f", session.totalVolumeKg / 1000.0)}t Volume",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary
+                    Spacer(modifier = Modifier.width(6.dp))
+                    IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            Icons.Default.DeleteOutline,
+                            contentDescription = "Delete session",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(10.dp))
+            if (session.notes.isNotBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = session.notes,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-                // Exercises in session with Hevy style cards
-                session.exercises.forEach { ex ->
-                    Column(
+            if (session.sets.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+                Spacer(modifier = Modifier.height(6.dp))
+                session.sets.forEach { set ->
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
-                            .padding(10.dp)
+                            .padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = ex.exerciseName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = ex.equipmentType.label.split(" ").first(),
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                            Text(
-                                text = "1RM: ${ex.maxEstimated1Rm.toInt()}kg",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = extra.proteinColor
-                            )
-                        }
-                        if (ex.machineSettings.isNotBlank()) {
-                            Text(
-                                text = "Settings: ${ex.machineSettings}",
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            ex.sets.forEach { s ->
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(MaterialTheme.colorScheme.background)
-                                        .border(
-                                            androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)),
-                                            RoundedCornerShape(6.dp)
-                                        )
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        text = "S${s.setNumber}: ${s.weightKg.toInt()}kg × ${s.reps}",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-                        }
+                        Text(
+                            text = "${set.exerciseName} (Set ${set.setNumber})",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "${set.weightKg}kg × ${set.reps} @ RPE ${set.rpe}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
         }
-
-        item { Spacer(modifier = Modifier.height(40.dp)) }
-    }
-
-    // Add Exercise to Session Dialog
-    if (showAddExerciseDialog) {
-        var set1Weight by remember { mutableStateOf("60") }
-        var set1Reps by remember { mutableStateOf("10") }
-        var set2Weight by remember { mutableStateOf("70") }
-        var set2Reps by remember { mutableStateOf("8") }
-        var set3Weight by remember { mutableStateOf("75") }
-        var set3Reps by remember { mutableStateOf("6") }
-
-        AlertDialog(
-            onDismissRequest = { showAddExerciseDialog = false },
-            title = { Text("Log Equipment & Exercise") },
-            text = {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    item {
-                        OutlinedTextField(
-                            value = exerciseName,
-                            onValueChange = { exerciseName = it },
-                            label = { Text("Exercise Name") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    item {
-                        OutlinedTextField(
-                            value = machineSettings,
-                            onValueChange = { machineSettings = it },
-                            label = { Text("Equipment Specifics / Machine Pin / Seat Notch") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    item {
-                        Text("Target Muscle Group", style = MaterialTheme.typography.labelSmall)
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            listOf(MuscleGroup.CHEST, MuscleGroup.BACK_LATS, MuscleGroup.QUADS, MuscleGroup.SHOULDERS).forEach { m ->
-                                FilterChip(
-                                    selected = selectedMuscle == m,
-                                    onClick = { selectedMuscle = m },
-                                    label = { Text(m.label.split(" ").first()) }
-                                )
-                            }
-                        }
-                    }
-                    item {
-                        Text("Equipment Category", style = MaterialTheme.typography.labelSmall)
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            listOf(EquipmentType.BARBELL, EquipmentType.DUMBBELL, EquipmentType.CABLE, EquipmentType.PIN_LOADED_MACHINE).forEach { eq ->
-                                FilterChip(
-                                    selected = selectedEquipment == eq,
-                                    onClick = { selectedEquipment = eq },
-                                    label = { Text(eq.label.split(" ").first()) }
-                                )
-                            }
-                        }
-                    }
-                    item {
-                        Text("Working Sets (Weight kg × Reps)", fontWeight = FontWeight.Bold)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(value = set1Weight, onValueChange = { set1Weight = it }, label = { Text("Set 1 kg") }, modifier = Modifier.weight(1f))
-                            OutlinedTextField(value = set1Reps, onValueChange = { set1Reps = it }, label = { Text("Reps") }, modifier = Modifier.weight(1f))
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(value = set2Weight, onValueChange = { set2Weight = it }, label = { Text("Set 2 kg") }, modifier = Modifier.weight(1f))
-                            OutlinedTextField(value = set2Reps, onValueChange = { set2Reps = it }, label = { Text("Reps") }, modifier = Modifier.weight(1f))
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(value = set3Weight, onValueChange = { set3Weight = it }, label = { Text("Set 3 kg") }, modifier = Modifier.weight(1f))
-                            OutlinedTextField(value = set3Reps, onValueChange = { set3Reps = it }, label = { Text("Reps") }, modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val sets = mutableListOf<ExerciseSet>()
-                        val w1 = set1Weight.toDoubleOrNull() ?: 0.0
-                        val r1 = set1Reps.toIntOrNull() ?: 0
-                        if (w1 > 0 && r1 > 0) sets.add(ExerciseSet(setNumber = 1, weightKg = w1, reps = r1, estimated1RmKg = OneRepMaxCalculator.calculate(w1, r1)))
-
-                        val w2 = set2Weight.toDoubleOrNull() ?: 0.0
-                        val r2 = set2Reps.toIntOrNull() ?: 0
-                        if (w2 > 0 && r2 > 0) sets.add(ExerciseSet(setNumber = 2, weightKg = w2, reps = r2, estimated1RmKg = OneRepMaxCalculator.calculate(w2, r2)))
-
-                        val w3 = set3Weight.toDoubleOrNull() ?: 0.0
-                        val r3 = set3Reps.toIntOrNull() ?: 0
-                        if (w3 > 0 && r3 > 0) sets.add(ExerciseSet(setNumber = 3, weightKg = w3, reps = r3, estimated1RmKg = OneRepMaxCalculator.calculate(w3, r3)))
-
-                        val exercise = ExerciseLog(
-                            exerciseName = exerciseName,
-                            muscleGroup = selectedMuscle,
-                            equipmentType = selectedEquipment,
-                            machineSettings = machineSettings,
-                            sets = sets
-                        )
-                        currentExercises.add(exercise)
-                        showAddExerciseDialog = false
-                    }
-                ) {
-                    Text("Add to Workout")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddExerciseDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }
-
