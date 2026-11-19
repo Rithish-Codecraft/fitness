@@ -40,7 +40,9 @@ fun DashboardScreen(
     onOpenUsageSettings: () -> Unit = {},
     onRefreshLifestyle: () -> Unit = {},
     onSyncStorage: () -> Unit = {},
-    onRequestCamera: () -> Unit = {}
+    onRequestCamera: () -> Unit = {},
+    onSyncAndroidFit: () -> Unit = {},
+    onRequestHealthPermissions: () -> Unit = {}
 ) {
     val extra = LocalExtraColors.current
     val profile = uiState.userProfile
@@ -117,11 +119,14 @@ fun DashboardScreen(
             }
         }
 
-        // 100% Real Phone Hardware Sensor Telemetry Card (9 Hardware Streams)
+        // 100% Real Android Fitness Manager (Health Connect) + Hardware Sensor Telemetry Card
         item {
             LivePhoneSensorsTelemetryCard(
                 telemetry = uiState.sensorTelemetry,
-                onSimulateStepPulse = onSimulateStepPulse
+                healthConnectStatus = uiState.healthConnectStatus,
+                onSimulateStepPulse = onSimulateStepPulse,
+                onSyncAndroidFit = onSyncAndroidFit,
+                onRequestHealthPermissions = onRequestHealthPermissions
             )
         }
 

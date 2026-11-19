@@ -12,8 +12,8 @@ android {
         applicationId = "com.pulseforge.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 11
-        versionName = "1.7.0"
+        versionCode = 12
+        versionName = "1.7.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -100,10 +100,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // SQLite / Room Persistence
+    // Room / SQLite Persistence
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
+
+    // Android Default Fitness Manager (Health Connect)
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
 
     // Unit Testing
     testImplementation("junit:junit:4.13.2")

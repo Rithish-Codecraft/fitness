@@ -20,12 +20,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pulseforge.app.core.telemetry.HealthConnectStatus
 import com.pulseforge.app.domain.model.DetectedActivityType
 import com.pulseforge.app.domain.model.PhoneSensorTelemetry
 
 /**
- * 100% Real Android Phone Hardware Sensor & Telemetry Suite
- * Displays all 9 device sensor streams with zero duplicates:
+ * 100% Real Android Fitness Manager (Health Connect) + Phone Hardware Sensor Telemetry Suite
+ * Displays all 9 device & fitness manager streams with leading icons then text:
  * 1. Step Count
  * 2. Step Cadence
  * 3. Activity Type
@@ -40,7 +41,10 @@ import com.pulseforge.app.domain.model.PhoneSensorTelemetry
 @Composable
 fun LivePhoneSensorsTelemetryCard(
     telemetry: PhoneSensorTelemetry,
+    healthConnectStatus: HealthConnectStatus = HealthConnectStatus(),
     onSimulateStepPulse: (() -> Unit)? = null,
+    onSyncAndroidFit: (() -> Unit)? = null,
+    onRequestHealthPermissions: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     // Pulsing green beacon for active hardware sensors
@@ -86,21 +90,39 @@ fun LivePhoneSensorsTelemetryCard(
 
                 Surface(
                     shape = RoundedCornerShape(50),
-                    color = Color(0xFF10B981).copy(alpha = 0.15f)
+                    color = if (healthConnectStatus.hasPermissions) Color(0xFF10B981).copy(alpha = 0.15f) else Color(0xFF38BDF8).copy(alpha = 0.15f),
+                    onClick = {
+                        if (healthConnectStatus.isAvailable && !healthConnectStatus.hasPermissions) {
+                            onRequestHealthPermissions?.invoke()
+                        } else {
+                            onSyncAndroidFit?.invoke()
+                        }
+                    }
                 ) {
-                    Text(
-                        text = "100% Real Sensors",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF10B981),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FitnessCenter,
+                            contentDescription = null,
+                            tint = if (healthConnectStatus.hasPermissions) Color(0xFF10B981) else Color(0xFF38BDF8),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = healthConnectStatus.statusLabel,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (healthConnectStatus.hasPermissions) Color(0xFF10B981) else Color(0xFF38BDF8)
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Live hardware data stream • Zero simulated duplicate values",
+                text = "Android Fitness Manager (Health Connect) + Hardware Sensors",
                 fontSize = 11.sp,
                 color = Color.White.copy(alpha = 0.5f)
             )
@@ -278,21 +300,52 @@ private fun SensorTile(
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = label, fontSize = 10.sp, color = Color.White.copy(alpha = 0.6f), fontWeight = FontWeight.Medium)
-                Icon(imageVector = icon, contentDescription = null, tint = accentColor, modifier = Modifier.size(15.dp))
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(accentColor.copy(alpha = 0.16f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = label,
+                        tint = accentColor,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+                Text(
+                    text = label,
+                    fontSize = 11.sp,
+                    color = Color.White.copy(alpha = 0.72f),
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1
+                )
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = value,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Black,
-                color = if (value == "-") Color.White.copy(alpha = 0.35f) else Color.White
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(text = unit, fontSize = 9.sp, color = Color.White.copy(alpha = 0.4f))
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = accentColor.copy(alpha = 0.85f),
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(
+                    text = value,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Black,
+                    color = if (value == "-") Color.White.copy(alpha = 0.35f) else Color.White,
+                    maxLines = 1
+                )
+            }
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(text = unit, fontSize = 9.sp, color = Color.White.copy(alpha = 0.45f))
         }
     }
 }

@@ -1,10 +1,10 @@
 {
-  "versionCode": 11,
-  "versionName": "1.7.0",
+  "versionCode": 12,
+  "versionName": "1.7.1",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Dedicated Device Storage Directory: Automatically creates and maintains 'Documents/PulseForge AI/' on user device storing user profile, workouts, nutrition, and telemetry JSON files.\n• Real Screen Time & Nighttime App Usage: Real hardware usage telemetry extracting daily screen time, nighttime phone duration (10 PM - 6 AM), and top late-night apps to assess sleep latency.\n• Objective Sleep Window & Circadian Rhythm: Accurately deduces bedtime, wake time, and sleep disruption feedback from device inactivity.\n• Real 9-Stream Sensor Telemetry: Live step count, cadence, pace, distance, elevation, and active calories with strict '-' integrity.\n• Complete Device Capability Hub: Real-time status pills for storage readiness, camera permissions, hardware motion sensors, and usage stats access.",
+  "releaseNotes": "• Android Default Fitness Manager (Health Connect): Integrated androidx.health.connect:connect-client to read Steps, Cadence, Distance, Speed/Pace, Elevation & Floors, Active Calories, Sleep Sessions, and Exercise GPS Routes directly from Android's default Fitness Manager.\n• Persistent Hardware Sensor Fallback: Daily step baseline persisted across app restarts with automatic calorie calculation and last-known GPS fix.\n• Icon-First Telemetry Tiles: Updated all 9 telemetry feature tiles to display leading icons before text for clear scannability.",
   "isMandatory": false,
   "minSupportedVersion": 1,
-  "fileSizeBytes": 54273996,
-  "sha256": "ADDB0E5D11B4FDA40B165A4F923D4EB044E58BF67E8E318C7A9370A8EBFEACAF"
+  "fileSizeBytes": 55602096,
+  "sha256": "70C56D76EA6B162A161EBBD57B9BC299F8659F1858649C413F37930EBE0D2594"
 }

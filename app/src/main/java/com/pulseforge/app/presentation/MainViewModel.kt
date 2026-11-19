@@ -41,9 +41,11 @@ data class MainUiState(
     val updateState: UpdateState = UpdateState.Idle,
     val updateManifestUrl: String = "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/version.json",
     val sensorTelemetry: PhoneSensorTelemetry = PhoneSensorTelemetry(),
+    val healthConnectStatus: com.pulseforge.app.core.telemetry.HealthConnectStatus = com.pulseforge.app.core.telemetry.HealthConnectStatus(),
     val lifestyleSleepAnalysis: LifestyleSleepAnalysis = LifestyleSleepAnalysis(),
     val storageStatus: StorageStatus = StorageStatus(),
-    val isCameraPermissionGranted: Boolean = false
+    val isCameraPermissionGranted: Boolean = false,
+    val policyState: com.pulseforge.app.core.policy.AndroidPolicyState = com.pulseforge.app.core.policy.AndroidPolicyState()
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -51,9 +53,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val database = PulseForgeDatabase.getInstance(application)
     private val repository = PulseForgeRepositoryImpl(database)
     private val telemetryManager = com.pulseforge.app.core.telemetry.PhoneTelemetryManager(application)
+    private val androidFitnessManager = com.pulseforge.app.core.telemetry.AndroidFitnessManager(application)
     private val lifestyleManager = com.pulseforge.app.core.lifestyle.LifestyleUsageManager(application)
     private val storageManager = com.pulseforge.app.core.storage.PulseForgeStorageManager(application)
+    private val policyManager = com.pulseforge.app.core.policy.AndroidPolicyManager(application)
 
+    private var latestHealthConnectTelemetry = PhoneSensorTelemetry()
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
@@ -63,17 +68,66 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         observeReviews()
         refreshDashboardWidgets()
         observeSensorTelemetry()
+        syncAndroidFitnessManager()
         refreshLifestyleAndSleep()
         syncDataToPulseForgeStorage()
+        refreshPolicyAndPermissions()
     }
 
     private fun observeSensorTelemetry() {
         telemetryManager.startListening(userWeightKg = _uiState.value.userProfile.currentWeightKg)
         viewModelScope.launch {
-            telemetryManager.telemetry.collect { telemetry ->
-                _uiState.update { it.copy(sensorTelemetry = telemetry) }
+            telemetryManager.telemetry.collect { hwTelemetry ->
+                val merged = mergeTelemetry(hwTelemetry, latestHealthConnectTelemetry)
+                _uiState.update { it.copy(sensorTelemetry = merged) }
             }
         }
+    }
+
+    fun syncAndroidFitnessManager() {
+        viewModelScope.launch {
+            val (hcTelemetry, status) = androidFitnessManager.readTodayFitnessData()
+            latestHealthConnectTelemetry = hcTelemetry
+            val merged = mergeTelemetry(telemetryManager.telemetry.value, hcTelemetry)
+            _uiState.update {
+                it.copy(
+                    sensorTelemetry = merged,
+                    healthConnectStatus = status
+                )
+            }
+            refreshPolicyAndPermissions()
+            syncDataToPulseForgeStorage()
+        }
+    }
+
+    fun getRequiredHealthPermissions(): Set<String> = androidFitnessManager.requiredPermissions
+
+    fun getHealthConnectInstallIntent() = androidFitnessManager.createInstallProviderIntent()
+
+    private fun mergeTelemetry(
+        hw: PhoneSensorTelemetry,
+        hc: PhoneSensorTelemetry
+    ): PhoneSensorTelemetry {
+        val mergedSteps = listOfNotNull(hw.stepCount, hc.stepCount).maxOrNull()
+        val mergedDistance = listOfNotNull(hw.distanceMeters, hc.distanceMeters).maxOrNull()
+        val mergedCalories = listOfNotNull(hw.activeCaloriesBurned, hc.activeCaloriesBurned).maxOrNull()
+        val mergedElevation = listOfNotNull(hw.elevationGainMeters, hc.elevationGainMeters).maxOrNull()
+        val mergedFloors = listOfNotNull(hw.floorsClimbed, hc.floorsClimbed).maxOrNull()
+
+        return PhoneSensorTelemetry(
+            stepCount = mergedSteps,
+            stepCadenceSpm = hw.stepCadenceSpm ?: hc.stepCadenceSpm,
+            activityType = if (hw.activityType != DetectedActivityType.STILL) hw.activityType else hc.activityType,
+            distanceMeters = mergedDistance,
+            speedKmh = hw.speedKmh ?: hc.speedKmh,
+            paceMinPerKm = hw.paceMinPerKm ?: hc.paceMinPerKm,
+            gpsRoute = if (hw.gpsRoute.isNotEmpty()) hw.gpsRoute else hc.gpsRoute,
+            elevationGainMeters = mergedElevation,
+            floorsClimbed = mergedFloors,
+            activeCaloriesBurned = mergedCalories,
+            sleepEstimate = hc.sleepEstimate ?: hw.sleepEstimate,
+            isSensorAvailable = hw.isSensorAvailable || hc.isSensorAvailable
+        )
     }
 
     fun triggerHardwareStepPulse(steps: Int = 10) {
@@ -85,6 +139,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val analysis = lifestyleManager.analyzeLifestyleAndSleep()
             _uiState.update { it.copy(lifestyleSleepAnalysis = analysis) }
+            refreshPolicyAndPermissions()
             syncDataToPulseForgeStorage()
         }
     }
@@ -105,9 +160,40 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setCameraPermissionGranted(granted: Boolean) {
         _uiState.update { it.copy(isCameraPermissionGranted = granted) }
+        refreshPolicyAndPermissions()
     }
 
     fun getUsageAccessSettingsIntent() = lifestyleManager.createUsageAccessSettingsIntent()
+
+    fun refreshPolicyAndPermissions() {
+        val currentHealthStatus = _uiState.value.healthConnectStatus
+        val evaluated = policyManager.evaluatePolicyState(currentHealthStatus)
+        _uiState.update { it.copy(policyState = evaluated) }
+    }
+
+    fun acceptUserPolicy() {
+        policyManager.acceptUserPolicy()
+        refreshPolicyAndPermissions()
+    }
+
+    fun revokeUserPolicyConsent() {
+        policyManager.revokeUserPolicyConsent()
+        refreshPolicyAndPermissions()
+    }
+
+    fun getRequiredRuntimePermissions(): Array<String> = policyManager.getRequiredRuntimePermissions()
+
+    fun getAppInfoSettingsIntent() = policyManager.createAppInfoSettingsIntent()
+
+    fun getAllFilesAccessIntent() = policyManager.createAllFilesAccessIntent()
+
+    fun getInstallUnknownAppsIntent() = policyManager.createInstallUnknownAppsIntent()
+
+    fun getRestrictedSettingsHelpIntent() = policyManager.createRestrictedSettingsHelpIntent()
+
+    fun restartTelemetryListeners() {
+        telemetryManager.startListening(userWeightKg = _uiState.value.userProfile.currentWeightKg)
+    }
 
     override fun onCleared() {
         super.onCleared()

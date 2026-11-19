@@ -90,6 +90,12 @@ class MainActivity : ComponentActivity() {
                 viewModel.syncDataToPulseForgeStorage()
             }
 
+            val healthPermissionLauncher = rememberLauncherForActivityResult(
+                contract = androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
+            ) { _ ->
+                viewModel.syncAndroidFitnessManager()
+            }
+
             LaunchedEffect(Unit) {
                 val hasCam = ContextCompat.checkSelfPermission(
                     context,
@@ -105,6 +111,7 @@ class MainActivity : ComponentActivity() {
                         )
                     )
                 }
+                viewModel.syncAndroidFitnessManager()
                 viewModel.refreshLifestyleAndSleep()
                 viewModel.syncDataToPulseForgeStorage()
             }
@@ -232,6 +239,18 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onRequestCamera = {
                                     cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                },
+                                onSyncAndroidFit = {
+                                    viewModel.syncAndroidFitnessManager()
+                                },
+                                onRequestHealthPermissions = {
+                                    if (uiState.healthConnectStatus.needsProviderInstall) {
+                                        try {
+                                            startActivity(viewModel.getHealthConnectInstallIntent())
+                                        } catch (_: Exception) {}
+                                    } else {
+                                        healthPermissionLauncher.launch(viewModel.getRequiredHealthPermissions())
+                                    }
                                 }
                             )
                         }
@@ -323,6 +342,7 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
         viewModel.setCameraPermissionGranted(hasCam)
+        viewModel.syncAndroidFitnessManager()
         viewModel.refreshLifestyleAndSleep()
         viewModel.syncDataToPulseForgeStorage()
     }

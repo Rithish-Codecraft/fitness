@@ -61,6 +61,8 @@ class PhoneTelemetryManager(private val context: Context) : SensorEventListener,
     private val lightSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_LIGHT)
 
     // Hardware State Trackers
+    private val prefs = context.getSharedPreferences("pulseforge_sensor_prefs", Context.MODE_PRIVATE)
+    private var activeWeightKg: Double = 72.0
     private var initialStepCount: Long? = null
     private var lastRecordedSteps: Long? = null
     private val recentStepTimestamps = ArrayDeque<Long>()
@@ -110,6 +112,7 @@ class PhoneTelemetryManager(private val context: Context) : SensorEventListener,
     }
 
     fun startListening(userWeightKg: Double = 72.0) {
+        activeWeightKg = userWeightKg
         // Register Hardware Sensors
         stepCounterSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
         stepDetectorSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
@@ -126,12 +129,26 @@ class PhoneTelemetryManager(private val context: Context) : SensorEventListener,
             context.registerReceiver(screenReceiver, filter)
         } catch (_: Exception) {}
 
-        // Request Location Updates if permission granted
+        // Request Location Updates & seed last known fix if permission granted
         try {
             if (locationManager != null &&
                 (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                  locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
             ) {
+                val lastKnown = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                if (lastKnown != null && waypoints.isEmpty()) {
+                    lastLocation = lastKnown
+                    waypoints.add(
+                        GpsWaypoint(
+                            latitude = lastKnown.latitude,
+                            longitude = lastKnown.longitude,
+                            altitudeMeters = lastKnown.altitude,
+                            timestampMillis = lastKnown.time
+                        )
+                    )
+                    _telemetry.update { it.copy(gpsRoute = waypoints.toList()) }
+                }
                 locationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
                     3000L,
@@ -160,17 +177,25 @@ class PhoneTelemetryManager(private val context: Context) : SensorEventListener,
         when (event.sensor.type) {
             Sensor.TYPE_STEP_COUNTER -> {
                 val totalHardwareSteps = event.values[0].toLong()
-                if (initialStepCount == null) {
-                    initialStepCount = totalHardwareSteps
+                val todayKey = "step_baseline_${java.time.LocalDate.now()}"
+                val savedBaseline = prefs.getLong(todayKey, -1L)
+                val baseline = if (savedBaseline < 0L || totalHardwareSteps < savedBaseline) {
+                    prefs.edit().putLong(todayKey, totalHardwareSteps).apply()
+                    totalHardwareSteps
+                } else {
+                    savedBaseline
                 }
-                val sessionSteps = totalHardwareSteps - (initialStepCount ?: totalHardwareSteps)
+                initialStepCount = baseline
+                val sessionSteps = (totalHardwareSteps - baseline).coerceAtLeast(0L)
                 if (sessionSteps != lastRecordedSteps) {
                     lastRecordedSteps = sessionSteps
                     recordStepPulse(now)
+                    val activeCal = sessionSteps * 0.04 * (activeWeightKg / 70.0)
                     _telemetry.update {
                         it.copy(
                             stepCount = sessionSteps,
-                            distanceMeters = if (cumulativeDistanceMeters > 0) cumulativeDistanceMeters else sessionSteps * 0.78
+                            distanceMeters = if (cumulativeDistanceMeters > 0) cumulativeDistanceMeters else sessionSteps * 0.78,
+                            activeCaloriesBurned = if (activeCal > 0) activeCal else it.activeCaloriesBurned
                         )
                     }
                 }
@@ -180,10 +205,12 @@ class PhoneTelemetryManager(private val context: Context) : SensorEventListener,
                 if (event.values[0] == 1.0f) {
                     recordStepPulse(now)
                     val newCount = (_telemetry.value.stepCount ?: 0L) + 1
+                    val activeCal = newCount * 0.04 * (activeWeightKg / 70.0)
                     _telemetry.update {
                         it.copy(
                             stepCount = newCount,
-                            distanceMeters = if (cumulativeDistanceMeters > 0) cumulativeDistanceMeters else newCount * 0.78
+                            distanceMeters = if (cumulativeDistanceMeters > 0) cumulativeDistanceMeters else newCount * 0.78,
+                            activeCaloriesBurned = activeCal
                         )
                     }
                 }
