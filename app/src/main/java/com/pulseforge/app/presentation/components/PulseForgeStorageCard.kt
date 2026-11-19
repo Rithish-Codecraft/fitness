@@ -43,10 +43,11 @@ fun PulseForgeStorageCard(
             // Header Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
@@ -66,17 +67,20 @@ fun PulseForgeStorageCard(
                     }
                     Column {
                         Text(
-                            text = "USER & APP DATA DIRECTORY",
+                            text = "APP DATA DIRECTORY",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp,
-                            color = Color(0xFF2ED573)
+                            letterSpacing = 0.8.sp,
+                            color = Color(0xFF2ED573),
+                            maxLines = 1
                         )
                         Text(
-                            text = "Dedicated Device Storage Folder",
+                            text = "Device Storage Backup",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.White
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -86,11 +90,13 @@ fun PulseForgeStorageCard(
                     color = Color(0xFF2ED573).copy(alpha = 0.15f)
                 ) {
                     Text(
-                        text = "Folder Active",
+                        text = "Active",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false,
                         color = Color(0xFF2ED573),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
             }
@@ -133,19 +139,24 @@ fun PulseForgeStorageCard(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "${storageStatus.syncedFileCount} data files synchronized (JSON)",
+                            text = "${storageStatus.syncedFileCount} JSON files synced",
                             fontSize = 11.sp,
                             color = Color(0xFF00CEC9),
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                         Text(
                             text = storageStatus.lastSyncTimestamp,
                             fontSize = 10.sp,
-                            color = Color.White.copy(alpha = 0.5f)
+                            color = Color.White.copy(alpha = 0.5f),
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }

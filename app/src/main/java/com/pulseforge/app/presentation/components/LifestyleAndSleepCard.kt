@@ -127,7 +127,7 @@ fun LifestyleAndSleepCard(
                             )
                         }
                         Text(
-                            text = "If \"Permit access to app usage data\" is greyed out (Android 13+ Restricted Setting): tap Open App Info / Policy -> ⋮ (top-right) -> Allow restricted settings, then enable Usage Access.",
+                            text = "Enable Usage Access for real screen time & sleep tracking. If greyed out: App Info -> ⋮ -> Allow restricted settings.",
                             fontSize = 12.sp,
                             color = Color.White.copy(alpha = 0.7f),
                             lineHeight = 16.sp

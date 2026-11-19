@@ -69,10 +69,13 @@ fun LivePhoneSensorsTelemetryCard(
             // Header with Live Beacon
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Box(
                         modifier = Modifier
                             .size(10.dp)
@@ -84,7 +87,9 @@ fun LivePhoneSensorsTelemetryCard(
                         text = "Phone Hardware Telemetry",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
                 }
 
@@ -114,6 +119,8 @@ fun LivePhoneSensorsTelemetryCard(
                             text = healthConnectStatus.statusLabel,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            softWrap = false,
                             color = if (healthConnectStatus.hasPermissions) Color(0xFF10B981) else Color(0xFF38BDF8)
                         )
                     }
@@ -122,9 +129,11 @@ fun LivePhoneSensorsTelemetryCard(
 
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Android Fitness Manager (Health Connect) + Hardware Sensors",
+                text = "Health Connect + Device Sensors",
                 fontSize = 11.sp,
-                color = Color.White.copy(alpha = 0.5f)
+                color = Color.White.copy(alpha = 0.5f),
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(16.dp))

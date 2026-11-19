@@ -98,7 +98,7 @@ class AndroidFitnessManager(private val context: Context) {
                     isAvailable = false,
                     needsProviderInstall = false,
                     hasPermissions = false,
-                    statusLabel = "Device Sensors Active"
+                    statusLabel = "Sensors Active"
                 )
             }
         }

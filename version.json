@@ -1,10 +1,10 @@
 {
-  "versionCode": 17,
-  "versionName": "1.8.17",
+  "versionCode": 18,
+  "versionName": "1.8.18",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Welcome Carousel, Login & Signup Screen: Full-bleed swipeable onboarding slides with SKIP >, login, and signup pill buttons.\n• Unique PulseForge User ID (PF-XXXXXX): Generates a unique User ID upon signup with SHA-256 local account authentication and Sign Out support in Settings.\n• One-by-One Personal Details Cards: 6-step guided card wizard after signup for Age/Gender, Measurements, Goal, Target/Timeline (with live TDEE), Activity/Experience, and Diet/Muscles.",
+  "releaseNotes": "• 100% Real-Data Dashboard: Removed hardcoded mock cards (Strength PR, Activity Timeline, Blood Pressure/ECG, Today's Plan, Muscle Sets) and wired Muscle Volume & Macro Tachometer to real logged data.\n• Real User Name & Clean Top Nav Bar: Header now displays the signed-in user's real name + PF-XXXXXX User ID with non-clipping compact action buttons.\n• Fixed Layout & Badge Wrapping: Fixed vertical badge wrapping and overlapping timestamps in Telemetry, Storage, and Lifestyle cards.",
   "isMandatory": false,
   "minSupportedVersion": 1,
   "fileSizeBytes": 55683840,
-  "sha256": "9A1DE8620A58814445784F34B98A2CC3192FAC5F582D98568A46A2F4588435C9"
+  "sha256": "77C7CED2DC73A184694AD5778130940D05C2C85AAB5D285B2378F374C9F2A5F7"
 }
