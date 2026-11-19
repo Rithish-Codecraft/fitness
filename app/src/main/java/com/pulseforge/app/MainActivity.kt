@@ -38,6 +38,8 @@ import com.pulseforge.app.presentation.dashboard.DashboardScreen
 import com.pulseforge.app.presentation.navigation.BottomNavItems
 import com.pulseforge.app.presentation.navigation.Screen
 import com.pulseforge.app.presentation.nutrition.NutritionScreen
+import com.pulseforge.app.presentation.auth.AuthScreen
+import com.pulseforge.app.presentation.auth.PersonalDetailsWizardScreen
 import com.pulseforge.app.presentation.onboarding.OnboardingScreen
 import com.pulseforge.app.presentation.policy.UserPolicyScreen
 import com.pulseforge.app.presentation.settings.ThemeSettingsScreen
@@ -242,11 +244,50 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
+                    val initialDestination = remember {
+                        when {
+                            !uiState.authState.isLoggedIn -> Screen.Auth.route
+                            uiState.authState.needsPersonalDetailsWizard -> Screen.PersonalWizard.route
+                            else -> Screen.Dashboard.route
+                        }
+                    }
+
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.Dashboard.route,
+                        startDestination = initialDestination,
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable(Screen.Auth.route) {
+                            AuthScreen(
+                                onSignUp = { name, email, pass -> viewModel.signUp(name, email, pass) },
+                                onLogin = { id, pass -> viewModel.login(id, pass) },
+                                onAuthSuccess = { isNewSignUp ->
+                                    val nextRoute = if (isNewSignUp) {
+                                        Screen.PersonalWizard.route
+                                    } else {
+                                        Screen.Dashboard.route
+                                    }
+                                    navController.navigate(nextRoute) {
+                                        popUpTo(Screen.Auth.route) { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+
+                        composable(Screen.PersonalWizard.route) {
+                            val account = uiState.authState.activeAccount
+                            PersonalDetailsWizardScreen(
+                                userId = account?.userId ?: uiState.userProfile.id,
+                                initialName = account?.fullName ?: uiState.userProfile.name,
+                                currentProfile = uiState.userProfile,
+                                onCompleteWizard = { updatedProfile ->
+                                    viewModel.completePersonalDetailsWizard(updatedProfile)
+                                    navController.navigate(Screen.Dashboard.route) {
+                                        popUpTo(Screen.PersonalWizard.route) { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
                         composable(Screen.Dashboard.route) {
                             DashboardScreen(
                                 uiState = uiState,
@@ -362,17 +403,27 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(Screen.Themes.route) {
+                            val activeAccount = uiState.authState.activeAccount
                             ThemeSettingsScreen(
                                 activeTheme = uiState.userProfile.activeTheme,
                                 isDarkMode = uiState.userProfile.isDarkMode,
                                 manifestUrl = uiState.updateManifestUrl,
                                 policyState = uiState.policyState,
+                                userId = activeAccount?.userId ?: uiState.userProfile.id,
+                                userName = activeAccount?.fullName ?: uiState.userProfile.name,
+                                userEmail = activeAccount?.email ?: "",
                                 onSelectTheme = { viewModel.switchTheme(it) },
                                 onToggleDarkMode = { viewModel.toggleDarkMode(it) },
                                 onCheckForUpdates = { viewModel.checkForUpdates() },
                                 onTriggerDemoUpdate = { viewModel.triggerDemoUpdate() },
                                 onUpdateManifestUrl = { viewModel.updateManifestUrl(it) },
-                                onOpenUserPolicy = { navController.navigate(Screen.UserPolicy.route) }
+                                onOpenUserPolicy = { navController.navigate(Screen.UserPolicy.route) },
+                                onLogout = {
+                                    viewModel.logout()
+                                    navController.navigate(Screen.Auth.route) {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
                             )
                         }
 
@@ -467,7 +518,9 @@ class MainActivity : ComponentActivity() {
                     }
                     if (!startupPromptDismissed &&
                         missingAccessItems.isNotEmpty() &&
-                        currentRoute != Screen.UserPolicy.route
+                        currentRoute != Screen.UserPolicy.route &&
+                        currentRoute != Screen.Auth.route &&
+                        currentRoute != Screen.PersonalWizard.route
                     ) {
                         AlertDialog(
                             onDismissRequest = { startupPromptDismissed = true },

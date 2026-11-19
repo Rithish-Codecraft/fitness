@@ -45,7 +45,8 @@ data class MainUiState(
     val lifestyleSleepAnalysis: LifestyleSleepAnalysis = LifestyleSleepAnalysis(),
     val storageStatus: StorageStatus = StorageStatus(),
     val isCameraPermissionGranted: Boolean = false,
-    val policyState: com.pulseforge.app.core.policy.AndroidPolicyState = com.pulseforge.app.core.policy.AndroidPolicyState()
+    val policyState: com.pulseforge.app.core.policy.AndroidPolicyState = com.pulseforge.app.core.policy.AndroidPolicyState(),
+    val authState: com.pulseforge.app.core.auth.AuthSessionState = com.pulseforge.app.core.auth.AuthSessionState()
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -57,12 +58,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val lifestyleManager = com.pulseforge.app.core.lifestyle.LifestyleUsageManager(application)
     private val storageManager = com.pulseforge.app.core.storage.PulseForgeStorageManager(application)
     private val policyManager = com.pulseforge.app.core.policy.AndroidPolicyManager(application)
+    private val authManager = com.pulseforge.app.core.auth.AuthAccountManager(application)
 
     private var latestHealthConnectTelemetry = PhoneSensorTelemetry()
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     init {
+        refreshAuthState()
         observeUserProfile()
         observeWorkouts()
         observeReviews()
@@ -194,6 +197,64 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun restartTelemetryListeners() {
         telemetryManager.startListening(userWeightKg = _uiState.value.userProfile.currentWeightKg)
+    }
+
+    fun refreshAuthState() {
+        _uiState.update { it.copy(authState = authManager.getSessionState()) }
+    }
+
+    fun signUp(
+        fullName: String,
+        email: String,
+        password: String
+    ): Result<com.pulseforge.app.core.auth.AuthAccount> {
+        val result = authManager.signUp(fullName, email, password)
+        result.onSuccess { account ->
+            viewModelScope.launch {
+                val updatedProfile = _uiState.value.userProfile.copy(
+                    id = account.userId,
+                    name = account.fullName,
+                    isOnboarded = false
+                )
+                repository.saveUserProfile(updatedProfile)
+            }
+            refreshAuthState()
+        }
+        return result
+    }
+
+    fun login(
+        identifier: String,
+        password: String
+    ): Result<com.pulseforge.app.core.auth.AuthAccount> {
+        val result = authManager.login(identifier, password)
+        result.onSuccess { account ->
+            viewModelScope.launch {
+                val updatedProfile = _uiState.value.userProfile.copy(
+                    id = account.userId,
+                    name = account.fullName,
+                    isOnboarded = true
+                )
+                repository.saveUserProfile(updatedProfile)
+            }
+            refreshAuthState()
+        }
+        return result
+    }
+
+    fun completePersonalDetailsWizard(profile: UserProfile) {
+        viewModelScope.launch {
+            repository.saveUserProfile(profile)
+            authManager.markPersonalDetailsCompleted()
+            refreshDashboardWidgets()
+            refreshAuthState()
+            syncDataToPulseForgeStorage()
+        }
+    }
+
+    fun logout() {
+        authManager.logout()
+        refreshAuthState()
     }
 
     override fun onCleared() {

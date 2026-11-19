@@ -42,12 +42,16 @@ fun ThemeSettingsScreen(
     isDarkMode: Boolean,
     manifestUrl: String = "",
     policyState: AndroidPolicyState = AndroidPolicyState(),
+    userId: String = "",
+    userName: String = "",
+    userEmail: String = "",
     onSelectTheme: (ThemePalette) -> Unit,
     onToggleDarkMode: (Boolean) -> Unit,
     onCheckForUpdates: () -> Unit = {},
     onTriggerDemoUpdate: () -> Unit = {},
     onUpdateManifestUrl: (String) -> Unit = {},
-    onOpenUserPolicy: () -> Unit = {}
+    onOpenUserPolicy: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     var customUrl by remember { mutableStateOf(manifestUrl) }
 
@@ -141,6 +145,36 @@ fun ThemeSettingsScreen(
                         checked = isDarkMode,
                         onCheckedChange = onToggleDarkMode
                     )
+                }
+            }
+        }
+
+        // User Account & ID Card
+        if (userId.isNotBlank()) {
+            item {
+                PulseCard {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = userName.ifBlank { "PulseForge Member" },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "User ID: $userId" + if (userEmail.isNotBlank()) " • $userEmail" else "",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        OutlinedButton(onClick = onLogout, shape = RoundedCornerShape(12.dp)) {
+                            Text("Sign Out")
+                        }
+                    }
                 }
             }
         }

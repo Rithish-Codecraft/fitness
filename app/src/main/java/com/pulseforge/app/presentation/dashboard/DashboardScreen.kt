@@ -88,7 +88,11 @@ fun DashboardScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "${profile.primaryGoal.label} • ${profile.currentWeightKg} kg",
+                            text = if (profile.id.startsWith("PF-")) {
+                                "${profile.id} • ${profile.primaryGoal.label} • ${profile.currentWeightKg} kg"
+                            } else {
+                                "${profile.primaryGoal.label} • ${profile.currentWeightKg} kg"
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

@@ -13,6 +13,8 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object Themes : Screen("themes", "Themes", Icons.Default.Palette)
     object Onboarding : Screen("onboarding", "Profile Setup", Icons.Default.Person)
     object UserPolicy : Screen("user_policy", "User Policy & Access", Icons.Default.VerifiedUser)
+    object Auth : Screen("auth", "Welcome", Icons.Default.Lock)
+    object PersonalWizard : Screen("personal_wizard", "Personal Details", Icons.Default.Badge)
 }
 
 val BottomNavItems = listOf(

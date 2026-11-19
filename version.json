@@ -1,10 +1,10 @@
 {
-  "versionCode": 16,
-  "versionName": "1.8.16",
+  "versionCode": 17,
+  "versionName": "1.8.17",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Startup Missing Permissions Popup: Automatically prompts on launch for any ungranted permissions with one-tap Grant All Access.\n• Direct App Info Button for Restricted Settings: Added Step 1: Open App Info (Allow Restricted Settings) directly on the Usage Access card in User Policy & Android Access.\n• Crash & Stability Fixes: Safe camera permission check before scanning and OEM-safe settings intents.",
+  "releaseNotes": "• Welcome Carousel, Login & Signup Screen: Full-bleed swipeable onboarding slides with SKIP >, login, and signup pill buttons.\n• Unique PulseForge User ID (PF-XXXXXX): Generates a unique User ID upon signup with SHA-256 local account authentication and Sign Out support in Settings.\n• One-by-One Personal Details Cards: 6-step guided card wizard after signup for Age/Gender, Measurements, Goal, Target/Timeline (with live TDEE), Activity/Experience, and Diet/Muscles.",
   "isMandatory": false,
   "minSupportedVersion": 1,
-  "fileSizeBytes": 55634688,
-  "sha256": "ED1D2597C0BEFC2FCAFFD828CA64D4BC455804550AEB87B9C71DB4B81EEAC705"
+  "fileSizeBytes": 55683840,
+  "sha256": "9A1DE8620A58814445784F34B98A2CC3192FAC5F582D98568A46A2F4588435C9"
 }
