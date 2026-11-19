@@ -1,10 +1,10 @@
 {
-  "versionCode": 15,
-  "versionName": "1.8.15",
+  "versionCode": 16,
+  "versionName": "1.8.16",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Fixed Crash on Camera Scan: Requests CAMERA permission before launching Food Plate or Nutrition Label scanner instead of throwing SecurityException.\n• Safe Settings & Receiver Handling: Added try/catch + OEM fallback for Usage Access Settings and ContextCompat.RECEIVER_NOT_EXPORTED guard for screen receiver.\n• Clearer Android 13+ Restricted Settings Guide: Step-by-step instructions when Usage Access toggle is greyed out (App Info -> ⋮ -> Allow restricted settings).",
+  "releaseNotes": "• Startup Missing Permissions Popup: Automatically prompts on launch for any ungranted permissions with one-tap Grant All Access.\n• Direct App Info Button for Restricted Settings: Added Step 1: Open App Info (Allow Restricted Settings) directly on the Usage Access card in User Policy & Android Access.\n• Crash & Stability Fixes: Safe camera permission check before scanning and OEM-safe settings intents.",
   "isMandatory": false,
   "minSupportedVersion": 1,
   "fileSizeBytes": 55634688,
-  "sha256": "1978C41B1B9E5E1FB28BCC34177B6C8E46EE3CBDC3298059AD184F140244F4D3"
+  "sha256": "ED1D2597C0BEFC2FCAFFD828CA64D4BC455804550AEB87B9C71DB4B81EEAC705"
 }

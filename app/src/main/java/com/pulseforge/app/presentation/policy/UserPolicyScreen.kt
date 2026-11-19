@@ -299,7 +299,8 @@ fun UserPolicyScreen(
             items(policyState.accessItems, key = { it.id }) { item ->
                 PermissionAccessRowCard(
                     item = item,
-                    onActionClick = { onGrantSingleItem(item) }
+                    onActionClick = { onGrantSingleItem(item) },
+                    onOpenAppInfoSettings = onOpenAppInfoSettings
                 )
             }
         }
@@ -309,7 +310,8 @@ fun UserPolicyScreen(
 @Composable
 private fun PermissionAccessRowCard(
     item: PermissionAccessItem,
-    onActionClick: () -> Unit
+    onActionClick: () -> Unit,
+    onOpenAppInfoSettings: () -> Unit = {}
 ) {
     val statusColor = if (item.isGranted) Color(0xFF2ED573) else Color(0xFFFF6B6B)
     val categoryLabel = when (item.category) {
@@ -380,6 +382,15 @@ private fun PermissionAccessRowCard(
             }
 
             if (!item.isGranted) {
+                if (item.id == "usage_access") {
+                    OutlinedButton(
+                        onClick = onOpenAppInfoSettings,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Step 1: Open App Info (Allow Restricted Settings)")
+                    }
+                }
                 OutlinedButton(
                     onClick = onActionClick,
                     shape = RoundedCornerShape(12.dp),
@@ -389,7 +400,11 @@ private fun PermissionAccessRowCard(
                         text = when (item.category) {
                             AccessCategory.RUNTIME -> "Grant Permission"
                             AccessCategory.HEALTH_CONNECT -> "Grant Health Connect Access"
-                            AccessCategory.SPECIAL_RESTRICTED -> "Open Android Settings"
+                            AccessCategory.SPECIAL_RESTRICTED -> if (item.id == "usage_access") {
+                                "Step 2: Open Usage Access Settings"
+                            } else {
+                                "Open Android Settings"
+                            }
                         }
                     )
                 }

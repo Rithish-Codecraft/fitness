@@ -458,6 +458,75 @@ class MainActivity : ComponentActivity() {
                         onInstallApk = { apkPath -> viewModel.installApkFile(apkPath) },
                         onDismiss = { viewModel.dismissUpdateDialog() }
                     )
+
+                    // Startup Missing Permissions Grant Popup
+                    var startupPromptDismissed by remember { mutableStateOf(false) }
+                    val missingAccessItems = uiState.policyState.accessItems.filter { !it.isGranted }
+                    val hasMissingRuntime = missingAccessItems.any {
+                        it.category == com.pulseforge.app.core.policy.AccessCategory.RUNTIME
+                    }
+                    if (!startupPromptDismissed &&
+                        missingAccessItems.isNotEmpty() &&
+                        currentRoute != Screen.UserPolicy.route
+                    ) {
+                        AlertDialog(
+                            onDismissRequest = { startupPromptDismissed = true },
+                            title = {
+                                Text(
+                                    text = "Grant Android Permissions",
+                                    fontWeight = FontWeight.Bold
+                                )
+                            },
+                            text = {
+                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text(
+                                        text = "PulseForge AI needs the following permissions to enable live sensors, camera food scanning, and sleep analytics:",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    missingAccessItems.forEach { item ->
+                                        Text(
+                                            text = "• ${item.title}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                }
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        if (hasMissingRuntime) {
+                                            runtimePermissionsLauncher.launch(viewModel.getRequiredRuntimePermissions())
+                                        } else {
+                                            startupPromptDismissed = true
+                                            navController.navigate(Screen.UserPolicy.route) {
+                                                launchSingleTop = true
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Text(if (hasMissingRuntime) "Grant All Access" else "Grant Remaining")
+                                }
+                            },
+                            dismissButton = {
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    TextButton(
+                                        onClick = {
+                                            startupPromptDismissed = true
+                                            navController.navigate(Screen.UserPolicy.route) {
+                                                launchSingleTop = true
+                                            }
+                                        }
+                                    ) {
+                                        Text("Details")
+                                    }
+                                    TextButton(onClick = { startupPromptDismissed = true }) {
+                                        Text("Later")
+                                    }
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
