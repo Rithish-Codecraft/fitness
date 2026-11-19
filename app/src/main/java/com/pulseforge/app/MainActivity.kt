@@ -1,6 +1,7 @@
 package com.pulseforge.app
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
@@ -38,6 +39,7 @@ import com.pulseforge.app.presentation.navigation.BottomNavItems
 import com.pulseforge.app.presentation.navigation.Screen
 import com.pulseforge.app.presentation.nutrition.NutritionScreen
 import com.pulseforge.app.presentation.onboarding.OnboardingScreen
+import com.pulseforge.app.presentation.policy.UserPolicyScreen
 import com.pulseforge.app.presentation.settings.ThemeSettingsScreen
 import com.pulseforge.app.presentation.workout.WorkoutScreen
 
@@ -94,6 +96,29 @@ class MainActivity : ComponentActivity() {
                 contract = androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
             ) { _ ->
                 viewModel.syncAndroidFitnessManager()
+                viewModel.refreshPolicyAndPermissions()
+            }
+
+            val runtimePermissionsLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestMultiplePermissions()
+            ) { results ->
+                results[Manifest.permission.CAMERA]?.let { viewModel.setCameraPermissionGranted(it) }
+                viewModel.restartTelemetryListeners()
+                viewModel.syncDataToPulseForgeStorage()
+                viewModel.refreshPolicyAndPermissions()
+            }
+
+            val launchPermissionsRationale = remember(intent) {
+                intent?.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" ||
+                    intent?.action == Intent.ACTION_VIEW_PERMISSION_USAGE
+            }
+
+            LaunchedEffect(launchPermissionsRationale) {
+                if (launchPermissionsRationale) {
+                    navController.navigate(Screen.UserPolicy.route) {
+                        launchSingleTop = true
+                    }
+                }
             }
 
             LaunchedEffect(Unit) {
@@ -103,12 +128,9 @@ class MainActivity : ComponentActivity() {
                 ) == PackageManager.PERMISSION_GRANTED
                 viewModel.setCameraPermissionGranted(hasCam)
 
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
                     storagePermissionLauncher.launch(
-                        arrayOf(
-                            Manifest.permission.READ_EXTERNAL_STORAGE,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE
-                        )
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     )
                 }
                 viewModel.syncAndroidFitnessManager()
@@ -225,6 +247,7 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToCoach = { navController.navigate(Screen.Coach.route) },
                                 onNavigateToThemes = { navController.navigate(Screen.Themes.route) },
                                 onNavigateToOnboarding = { navController.navigate(Screen.Onboarding.route) },
+                                onNavigateToUserPolicy = { navController.navigate(Screen.UserPolicy.route) },
                                 onAddWater = { viewModel.addWater(it) },
                                 onCheckForUpdates = { viewModel.checkForUpdates() },
                                 onSimulateStepPulse = { viewModel.triggerHardwareStepPulse(25) },
@@ -306,11 +329,79 @@ class MainActivity : ComponentActivity() {
                                 activeTheme = uiState.userProfile.activeTheme,
                                 isDarkMode = uiState.userProfile.isDarkMode,
                                 manifestUrl = uiState.updateManifestUrl,
+                                policyState = uiState.policyState,
                                 onSelectTheme = { viewModel.switchTheme(it) },
                                 onToggleDarkMode = { viewModel.toggleDarkMode(it) },
                                 onCheckForUpdates = { viewModel.checkForUpdates() },
                                 onTriggerDemoUpdate = { viewModel.triggerDemoUpdate() },
-                                onUpdateManifestUrl = { viewModel.updateManifestUrl(it) }
+                                onUpdateManifestUrl = { viewModel.updateManifestUrl(it) },
+                                onOpenUserPolicy = { navController.navigate(Screen.UserPolicy.route) }
+                            )
+                        }
+
+                        composable(Screen.UserPolicy.route) {
+                            UserPolicyScreen(
+                                policyState = uiState.policyState,
+                                onAcceptPolicy = { viewModel.acceptUserPolicy() },
+                                onRevokePolicy = { viewModel.revokeUserPolicyConsent() },
+                                onGrantAllRuntimePermissions = {
+                                    runtimePermissionsLauncher.launch(viewModel.getRequiredRuntimePermissions())
+                                },
+                                onGrantSingleItem = { item ->
+                                    when (item.category) {
+                                        com.pulseforge.app.core.policy.AccessCategory.RUNTIME -> {
+                                            if (item.id == "location") {
+                                                runtimePermissionsLauncher.launch(
+                                                    arrayOf(
+                                                        Manifest.permission.ACCESS_FINE_LOCATION,
+                                                        Manifest.permission.ACCESS_COARSE_LOCATION
+                                                    )
+                                                )
+                                            } else {
+                                                runtimePermissionsLauncher.launch(arrayOf(item.androidPermission))
+                                            }
+                                        }
+                                        com.pulseforge.app.core.policy.AccessCategory.HEALTH_CONNECT -> {
+                                            if (uiState.healthConnectStatus.needsProviderInstall) {
+                                                try {
+                                                    startActivity(viewModel.getHealthConnectInstallIntent())
+                                                } catch (_: Exception) {}
+                                            } else {
+                                                healthPermissionLauncher.launch(viewModel.getRequiredHealthPermissions())
+                                            }
+                                        }
+                                        com.pulseforge.app.core.policy.AccessCategory.SPECIAL_RESTRICTED -> {
+                                            try {
+                                                when (item.id) {
+                                                    "usage_access" -> startActivity(viewModel.getUsageAccessSettingsIntent())
+                                                    "all_files" -> startActivity(viewModel.getAllFilesAccessIntent())
+                                                    "install_packages" -> startActivity(viewModel.getInstallUnknownAppsIntent())
+                                                    else -> startActivity(viewModel.getAppInfoSettingsIntent())
+                                                }
+                                            } catch (_: Exception) {
+                                                try {
+                                                    startActivity(viewModel.getAppInfoSettingsIntent())
+                                                } catch (_: Exception) {}
+                                            }
+                                        }
+                                    }
+                                },
+                                onOpenAppInfoSettings = {
+                                    try {
+                                        startActivity(viewModel.getAppInfoSettingsIntent())
+                                    } catch (_: Exception) {}
+                                },
+                                onOpenUsageAccessSettings = {
+                                    try {
+                                        startActivity(viewModel.getUsageAccessSettingsIntent())
+                                    } catch (_: Exception) {}
+                                },
+                                onOpenRestrictedSettingsHelp = {
+                                    try {
+                                        startActivity(viewModel.getRestrictedSettingsHelpIntent())
+                                    } catch (_: Exception) {}
+                                },
+                                onNavigateBack = { navController.popBackStack() }
                             )
                         }
 
@@ -345,6 +436,7 @@ class MainActivity : ComponentActivity() {
         viewModel.syncAndroidFitnessManager()
         viewModel.refreshLifestyleAndSleep()
         viewModel.syncDataToPulseForgeStorage()
+        viewModel.refreshPolicyAndPermissions()
     }
 }
 

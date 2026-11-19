@@ -25,7 +25,9 @@ import com.pulseforge.app.presentation.components.SectionHeader
 
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.runtime.*
+import com.pulseforge.app.core.policy.AndroidPolicyState
 
 data class ThemePreviewItem(
     val palette: ThemePalette,
@@ -39,11 +41,13 @@ fun ThemeSettingsScreen(
     activeTheme: ThemePalette,
     isDarkMode: Boolean,
     manifestUrl: String = "",
+    policyState: AndroidPolicyState = AndroidPolicyState(),
     onSelectTheme: (ThemePalette) -> Unit,
     onToggleDarkMode: (Boolean) -> Unit,
     onCheckForUpdates: () -> Unit = {},
     onTriggerDemoUpdate: () -> Unit = {},
-    onUpdateManifestUrl: (String) -> Unit = {}
+    onUpdateManifestUrl: (String) -> Unit = {},
+    onOpenUserPolicy: () -> Unit = {}
 ) {
     var customUrl by remember { mutableStateOf(manifestUrl) }
 
@@ -137,6 +141,53 @@ fun ThemeSettingsScreen(
                         checked = isDarkMode,
                         onCheckedChange = onToggleDarkMode
                     )
+                }
+            }
+        }
+
+        // User Policy, Privacy & Android Permissions Card
+        item {
+            PulseCard(borderGlow = !policyState.isPolicyAccepted) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.VerifiedUser,
+                            contentDescription = "User Policy",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Column {
+                            Text(
+                                text = "User Policy & Android Access",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (policyState.isPolicyAccepted) {
+                                    "v${policyState.policyVersion} Accepted • ${policyState.grantedCount}/${policyState.totalApplicableCount} permissions granted"
+                                } else {
+                                    "Review privacy policy, restricted settings & permissions"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    onClick = onOpenUserPolicy,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("View Policy & Grant Access")
                 }
             }
         }

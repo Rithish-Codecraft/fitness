@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.os.Process
 import android.provider.Settings
 import androidx.core.content.ContextCompat
@@ -64,8 +63,7 @@ class AndroidPolicyManager(private val context: Context) {
         val permissions = mutableListOf(
             Manifest.permission.CAMERA,
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.BODY_SENSORS
+            Manifest.permission.ACCESS_COARSE_LOCATION
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             permissions.add(Manifest.permission.ACTIVITY_RECOGNITION)
@@ -73,10 +71,7 @@ class AndroidPolicyManager(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)
         }
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
         return permissions.distinct().toTypedArray()
@@ -140,20 +135,14 @@ class AndroidPolicyManager(private val context: Context) {
     }
 
     fun hasAllFilesAccess(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Environment.isExternalStorageManager()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            true // Scoped Storage MediaStore.Files writes to Documents/PulseForge AI without special permission
         } else {
             isRuntimeGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
     }
 
-    fun canInstallUnknownApps(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.packageManager.canRequestPackageInstalls()
-        } else {
-            true
-        }
-    }
+    fun canInstallUnknownApps(): Boolean = true
 
     private fun buildAccessItems(healthConnectStatus: HealthConnectStatus): List<PermissionAccessItem> {
         val activityRecognitionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -202,14 +191,6 @@ class AndroidPolicyManager(private val context: Context) {
                 isGranted = isRuntimeGranted(Manifest.permission.CAMERA)
             ),
             PermissionAccessItem(
-                id = "body_sensors",
-                title = "Body & Biometric Sensors",
-                androidPermission = Manifest.permission.BODY_SENSORS,
-                purpose = "Reads supported device biometric/fitness sensor streams for workout intensity telemetry.",
-                category = AccessCategory.RUNTIME,
-                isGranted = isRuntimeGranted(Manifest.permission.BODY_SENSORS)
-            ),
-            PermissionAccessItem(
                 id = "notifications",
                 title = "Training & Hydration Alerts",
                 androidPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -245,23 +226,18 @@ class AndroidPolicyManager(private val context: Context) {
             PermissionAccessItem(
                 id = "all_files",
                 title = "Dedicated Documents Backup Folder",
-                androidPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
+                androidPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    "Scoped Storage (MediaStore)"
                 } else {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                 },
-                purpose = "Exports user-owned JSON backups to Documents/PulseForge AI. Falls back to app-private storage if denied.",
-                category = AccessCategory.SPECIAL_RESTRICTED,
+                purpose = "Exports user-owned JSON backups to Documents/PulseForge AI using Android Scoped Storage.",
+                category = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    AccessCategory.RUNTIME
+                } else {
+                    AccessCategory.SPECIAL_RESTRICTED
+                },
                 isGranted = hasAllFilesAccess()
-            ),
-            PermissionAccessItem(
-                id = "install_packages",
-                title = "OTA App Update Installer",
-                androidPermission = Manifest.permission.REQUEST_INSTALL_PACKAGES,
-                purpose = "Allows installing verified PulseForge AI APK updates when you explicitly tap Install Update.",
-                category = AccessCategory.SPECIAL_RESTRICTED,
-                isGranted = canInstallUnknownApps(),
-                isApplicable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
             )
         )
     }

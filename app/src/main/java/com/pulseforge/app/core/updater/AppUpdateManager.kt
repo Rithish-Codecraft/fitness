@@ -117,18 +117,6 @@ object AppUpdateManager {
                 return Result.failure(Exception("APK file not found at ${apkFile.absolutePath}"))
             }
 
-            // Check if app has permission to install packages on Android 8.0+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (!context.packageManager.canRequestPackageInstalls()) {
-                    val settingsIntent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
-                        data = Uri.parse("package:${context.packageName}")
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    context.startActivity(settingsIntent)
-                    return Result.failure(Exception("Please grant permission to install from this app and retry."))
-                }
-            }
-
             val apkUri = FileProvider.getUriForFile(
                 context,
                 "${context.packageName}.fileprovider",

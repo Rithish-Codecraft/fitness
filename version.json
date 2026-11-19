@@ -1,10 +1,10 @@
 {
-  "versionCode": 12,
-  "versionName": "1.7.1",
+  "versionCode": 13,
+  "versionName": "1.8.0",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Android Default Fitness Manager (Health Connect): Integrated androidx.health.connect:connect-client to read Steps, Cadence, Distance, Speed/Pace, Elevation & Floors, Active Calories, Sleep Sessions, and Exercise GPS Routes directly from Android's default Fitness Manager.\n• Persistent Hardware Sensor Fallback: Daily step baseline persisted across app restarts with automatic calorie calculation and last-known GPS fix.\n• Icon-First Telemetry Tiles: Updated all 9 telemetry feature tiles to display leading icons before text for clear scannability.",
+  "releaseNotes": "• Android User Policy & Access Center (v2.0.0): Added prominent data-use disclosures, Health Connect ACTION_SHOW_PERMISSIONS_RATIONALE & VIEW_PERMISSION_USAGE intent handling, and explicit user consent management.\n• Android 13+ Restricted Settings Guide: Built-in step-by-step guide & direct App Info / Usage Access shortcuts per Google Android Help (12623953).\n• Google Play & Scoped Storage Compliance: Removed unused/restricted permissions (READ_MEDIA_IMAGES, BODY_SENSORS, MANAGE_EXTERNAL_STORAGE, REQUEST_INSTALL_PACKAGES) and migrated Documents/PulseForge AI exports to Scoped Storage MediaStore.Files.",
   "isMandatory": false,
   "minSupportedVersion": 1,
-  "fileSizeBytes": 55602096,
-  "sha256": "70C56D76EA6B162A161EBBD57B9BC299F8659F1858649C413F37930EBE0D2594"
+  "fileSizeBytes": 55634684,
+  "sha256": "BB97808300FBCCBFE3BC6BB0F7CD4E92308D986D46403318DEC071591419CE5C"
 }

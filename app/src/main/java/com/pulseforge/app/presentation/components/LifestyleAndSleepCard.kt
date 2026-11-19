@@ -29,6 +29,7 @@ fun LifestyleAndSleepCard(
     analysis: LifestyleSleepAnalysis,
     onOpenUsageSettings: () -> Unit,
     onRefresh: () -> Unit,
+    onOpenRestrictedSettings: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -142,6 +143,19 @@ fun LifestyleAndSleepCard(
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
+                            )
+                        }
+                        OutlinedButton(
+                            onClick = onOpenRestrictedSettings,
+                            shape = RoundedCornerShape(12.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFA502).copy(alpha = 0.6f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Restricted Setting? Open App Info / Policy",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFFFFA502)
                             )
                         }
                     }

@@ -34,6 +34,7 @@ fun DashboardScreen(
     onNavigateToCoach: () -> Unit,
     onNavigateToThemes: () -> Unit,
     onNavigateToOnboarding: () -> Unit,
+    onNavigateToUserPolicy: () -> Unit = {},
     onAddWater: (Int) -> Unit,
     onCheckForUpdates: () -> Unit = {},
     onSimulateStepPulse: (() -> Unit)? = null,
@@ -94,6 +95,17 @@ fun DashboardScreen(
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    IconButton(onClick = onNavigateToUserPolicy) {
+                        Icon(
+                            imageVector = Icons.Default.VerifiedUser,
+                            contentDescription = "User Policy & Permissions",
+                            tint = if (uiState.policyState.isPolicyAccepted) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                Color(0xFFFFA502)
+                            }
+                        )
+                    }
                     IconButton(onClick = onCheckForUpdates) {
                         Icon(
                             imageVector = Icons.Default.CloudSync,
@@ -146,7 +158,8 @@ fun DashboardScreen(
             LifestyleAndSleepCard(
                 analysis = uiState.lifestyleSleepAnalysis,
                 onOpenUsageSettings = onOpenUsageSettings,
-                onRefresh = onRefreshLifestyle
+                onRefresh = onRefreshLifestyle,
+                onOpenRestrictedSettings = onNavigateToUserPolicy
             )
         }
 

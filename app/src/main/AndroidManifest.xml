@@ -6,22 +6,17 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    
+
     <!-- Real Android Phone Hardware Telemetry & Sensor Permissions -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-    <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Storage Access Permissions for dedicated user & app data directory -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <!-- Scoped Storage: API 29+ writes to Documents/PulseForge AI via MediaStore with zero permissions -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
-    <!-- Screen Time, App Usage & Nighttime Sleeping Pattern Analysis -->
+    <!-- Screen Time, App Usage & Nighttime Sleeping Pattern Analysis (Android 13+ Restricted Setting) -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
 
     <!-- Android Default Fitness Manager (Health Connect) Permissions -->
@@ -62,7 +57,6 @@
     <application
         android:name=".PulseForgeApp"
         android:allowBackup="true"
-        android:requestLegacyExternalStorage="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
