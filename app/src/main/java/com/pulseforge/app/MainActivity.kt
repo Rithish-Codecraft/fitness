@@ -57,6 +57,7 @@ class MainActivity : ComponentActivity() {
             // Camera launcher for Food Plate & Label scanning
             var pendingScanType by remember { mutableStateOf("PLATE") }
             var targetMealType by remember { mutableStateOf(MealType.LUNCH) }
+            var pendingCameraLaunch by remember { mutableStateOf(false) }
 
             val context = LocalContext.current
 
@@ -84,6 +85,14 @@ class MainActivity : ComponentActivity() {
                 contract = ActivityResultContracts.RequestPermission()
             ) { isGranted ->
                 viewModel.setCameraPermissionGranted(isGranted)
+                if (isGranted && pendingCameraLaunch) {
+                    pendingCameraLaunch = false
+                    try {
+                        cameraLauncher.launch(null)
+                    } catch (_: Exception) {}
+                } else {
+                    pendingCameraLaunch = false
+                }
             }
 
             val storagePermissionLauncher = rememberLauncherForActivityResult(
@@ -252,7 +261,13 @@ class MainActivity : ComponentActivity() {
                                 onCheckForUpdates = { viewModel.checkForUpdates() },
                                 onSimulateStepPulse = { viewModel.triggerHardwareStepPulse(25) },
                                 onOpenUsageSettings = {
-                                    startActivity(viewModel.getUsageAccessSettingsIntent())
+                                    try {
+                                        startActivity(viewModel.getUsageAccessSettingsIntent())
+                                    } catch (_: Exception) {
+                                        try {
+                                            startActivity(viewModel.getAppInfoSettingsIntent())
+                                        } catch (_: Exception) {}
+                                    }
                                 },
                                 onRefreshLifestyle = {
                                     viewModel.refreshLifestyleAndSleep()
@@ -288,12 +303,34 @@ class MainActivity : ComponentActivity() {
                                 onScanPlateTrigger = { meal ->
                                     targetMealType = meal
                                     pendingScanType = "PLATE"
-                                    cameraLauncher.launch(null)
+                                    val hasCam = ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.CAMERA
+                                    ) == PackageManager.PERMISSION_GRANTED
+                                    if (hasCam) {
+                                        try {
+                                            cameraLauncher.launch(null)
+                                        } catch (_: Exception) {}
+                                    } else {
+                                        pendingCameraLaunch = true
+                                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                    }
                                 },
                                 onScanLabelTrigger = { meal ->
                                     targetMealType = meal
                                     pendingScanType = "LABEL"
-                                    cameraLauncher.launch(null)
+                                    val hasCam = ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.CAMERA
+                                    ) == PackageManager.PERMISSION_GRANTED
+                                    if (hasCam) {
+                                        try {
+                                            cameraLauncher.launch(null)
+                                        } catch (_: Exception) {}
+                                    } else {
+                                        pendingCameraLaunch = true
+                                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                    }
                                 },
                                 onConfirmScannedFood = { candidates ->
                                     viewModel.confirmScannedFood(candidates)

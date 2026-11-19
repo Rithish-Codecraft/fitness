@@ -127,7 +127,7 @@ fun LifestyleAndSleepCard(
                             )
                         }
                         Text(
-                            text = "To track late-night mobile usage, identify sleep-disrupting apps, and measure screen time, enable Usage Access in Android Settings.",
+                            text = "If \"Permit access to app usage data\" is greyed out (Android 13+ Restricted Setting): tap Open App Info / Policy -> ⋮ (top-right) -> Allow restricted settings, then enable Usage Access.",
                             fontSize = 12.sp,
                             color = Color.White.copy(alpha = 0.7f),
                             lineHeight = 16.sp
@@ -139,7 +139,7 @@ fun LifestyleAndSleepCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Grant Usage Access in Settings",
+                                text = "Step 1: Open Usage Access",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -152,7 +152,7 @@ fun LifestyleAndSleepCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Restricted Setting? Open App Info / Policy",
+                                text = "Step 2: Toggle Greyed Out? Allow Restricted Settings",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFFFFA502)

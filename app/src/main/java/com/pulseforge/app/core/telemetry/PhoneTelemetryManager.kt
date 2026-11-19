@@ -13,6 +13,7 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.SystemClock
+import androidx.core.content.ContextCompat
 import com.pulseforge.app.domain.model.DetectedActivityType
 import com.pulseforge.app.domain.model.GpsWaypoint
 import com.pulseforge.app.domain.model.PhoneSensorTelemetry
@@ -72,6 +73,7 @@ class PhoneTelemetryManager(private val context: Context) : SensorEventListener,
     private var lastBarometricAltitude: Double? = null
     private var screenOffTimeMillis: Long? = null
     private var lastLightLux: Float? = null
+    private var isScreenReceiverRegistered = false
 
     // Real-time deduplicated GPS waypoints
     private val waypoints = mutableListOf<GpsWaypoint>()
@@ -113,21 +115,31 @@ class PhoneTelemetryManager(private val context: Context) : SensorEventListener,
 
     fun startListening(userWeightKg: Double = 72.0) {
         activeWeightKg = userWeightKg
-        // Register Hardware Sensors
-        stepCounterSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
-        stepDetectorSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
-        accelerometerSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
-        pressureSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
-        lightSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
-
-        // Register Screen BroadcastReceiver
+        // Register Hardware Sensors safely
         try {
-            val filter = IntentFilter().apply {
-                addAction(Intent.ACTION_SCREEN_OFF)
-                addAction(Intent.ACTION_SCREEN_ON)
-            }
-            context.registerReceiver(screenReceiver, filter)
+            stepCounterSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
+            stepDetectorSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
+            accelerometerSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+            pressureSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+            lightSensor?.let { sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
         } catch (_: Exception) {}
+
+        // Register Screen BroadcastReceiver once with RECEIVER_NOT_EXPORTED
+        if (!isScreenReceiverRegistered) {
+            try {
+                val filter = IntentFilter().apply {
+                    addAction(Intent.ACTION_SCREEN_OFF)
+                    addAction(Intent.ACTION_SCREEN_ON)
+                }
+                ContextCompat.registerReceiver(
+                    context,
+                    screenReceiver,
+                    filter,
+                    ContextCompat.RECEIVER_NOT_EXPORTED
+                )
+                isScreenReceiverRegistered = true
+            } catch (_: Exception) {}
+        }
 
         // Request Location Updates & seed last known fix if permission granted
         try {
@@ -165,7 +177,10 @@ class PhoneTelemetryManager(private val context: Context) : SensorEventListener,
         try {
             sensorManager?.unregisterListener(this)
             locationManager?.removeUpdates(this)
-            context.unregisterReceiver(screenReceiver)
+            if (isScreenReceiverRegistered) {
+                context.unregisterReceiver(screenReceiver)
+                isScreenReceiverRegistered = false
+            }
         } catch (_: Exception) {}
     }
 

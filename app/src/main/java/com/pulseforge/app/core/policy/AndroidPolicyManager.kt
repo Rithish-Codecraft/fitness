@@ -250,11 +250,18 @@ class AndroidPolicyManager(private val context: Context) {
     }
 
     fun createUsageAccessSettingsIntent(): Intent {
-        return Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+        val packageIntent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 data = Uri.fromParts("package", context.packageName, null)
             }
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        return if (packageIntent.resolveActivity(context.packageManager) != null) {
+            packageIntent
+        } else {
+            Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
         }
     }
 
