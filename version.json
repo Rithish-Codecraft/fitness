@@ -1,10 +1,10 @@
 {
-  "versionCode": 13,
-  "versionName": "1.8.0",
+  "versionCode": 14,
+  "versionName": "1.8.14",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Android User Policy & Access Center (v2.0.0): Added prominent data-use disclosures, Health Connect ACTION_SHOW_PERMISSIONS_RATIONALE & VIEW_PERMISSION_USAGE intent handling, and explicit user consent management.\n• Android 13+ Restricted Settings Guide: Built-in step-by-step guide & direct App Info / Usage Access shortcuts per Google Android Help (12623953).\n• Google Play & Scoped Storage Compliance: Removed unused/restricted permissions (READ_MEDIA_IMAGES, BODY_SENSORS, MANAGE_EXTERNAL_STORAGE, REQUEST_INSTALL_PACKAGES) and migrated Documents/PulseForge AI exports to Scoped Storage MediaStore.Files.",
+  "releaseNotes": "• Automatic Startup OTA Check: Checks version.json automatically on app launch with cache-busting so new live commits are detected immediately.\n• Auto-Release CI Workflow: Automatically builds and publishes signed APKs to live on every commit to main.\n• Android User Policy & Restricted Settings (v2.0.0): Built-in Health Connect rationale, Restricted Settings guide (12623953), and Scoped Storage compliance.",
   "isMandatory": false,
   "minSupportedVersion": 1,
   "fileSizeBytes": 55634684,
-  "sha256": "BB97808300FBCCBFE3BC6BB0F7CD4E92308D986D46403318DEC071591419CE5C"
+  "sha256": "25A7409C745340C77C3658DECE00BF5CC53317736D5DF61C23EBD80A86711B28"
 }
