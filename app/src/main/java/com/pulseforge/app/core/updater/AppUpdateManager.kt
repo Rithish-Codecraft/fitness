@@ -26,12 +26,19 @@ object AppUpdateManager {
         currentVersionCode: Int
     ): Result<UpdateManifest?> = withContext(Dispatchers.IO) {
         try {
-            val url = URL(manifestUrl)
+            val cacheBustedUrl = if (manifestUrl.contains("?")) {
+                "$manifestUrl&t=${System.currentTimeMillis()}"
+            } else {
+                "$manifestUrl?t=${System.currentTimeMillis()}"
+            }
+            val url = URL(cacheBustedUrl)
             val connection = (url.openConnection() as HttpURLConnection).apply {
                 connectTimeout = 8000
                 readTimeout = 8000
+                useCaches = false
                 requestMethod = "GET"
                 setRequestProperty("Accept", "application/json")
+                setRequestProperty("Cache-Control", "no-cache")
             }
 
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {

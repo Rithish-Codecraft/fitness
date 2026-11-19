@@ -1,0 +1,84 @@
+name: Auto Build & Publish Live OTA Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'version.json'
+      - 'releases/**'
+      - '.github/**'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish-ota:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Bump versionCode & versionName
+        id: version
+        run: |
+          CURRENT_CODE=$(python3 -c "import json; print(json.load(open('version.json'))['versionCode'])")
+          NEXT_CODE=$((CURRENT_CODE + 1))
+          NEXT_NAME="1.8.$NEXT_CODE"
+          sed -i "s/versionCode = [0-9]\+/versionCode = $NEXT_CODE/" app/build.gradle.kts
+          sed -i "s/versionName = \"[^\"]*\"/versionName = \"$NEXT_NAME\"/" app/build.gradle.kts
+          echo "code=$NEXT_CODE" >> "$GITHUB_OUTPUT"
+          echo "name=$NEXT_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build signed release APK
+        run: gradle :app:assembleRelease --no-daemon
+
+      - name: Update releases/app-release.apk and version.json
+        run: |
+          mkdir -p releases
+          cp app/build/outputs/apk/release/app-release.apk releases/app-release.apk
+          COMMIT_MSG=$(git log -1 --pretty=%s)
+          python3 - <<PY
+          import hashlib, json, os
+          apk_path = "releases/app-release.apk"
+          size = os.path.getsize(apk_path)
+          with open(apk_path, "rb") as f:
+              sha = hashlib.sha256(f.read()).hexdigest().upper()
+          data = {
+              "versionCode": int("${{ steps.version.outputs.code }}"),
+              "versionName": "${{ steps.version.outputs.name }}",
+              "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
+              "releaseNotes": f"• Live auto-build from commit: $COMMIT_MSG",
+              "isMandatory": False,
+              "minSupportedVersion": 1,
+              "fileSizeBytes": size,
+              "sha256": sha
+          }
+          with open("version.json", "w") as f:
+              json.dump(data, f, indent=2)
+              f.write("\n")
+          PY
+
+      - name: Commit & push live OTA release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/build.gradle.kts releases/app-release.apk version.json
+          git commit -m "chore(release): auto-publish v${{ steps.version.outputs.name }} (build ${{ steps.version.outputs.code }}) [skip ci]"
+          git push origin main

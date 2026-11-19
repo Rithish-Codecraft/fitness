@@ -72,6 +72,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         refreshLifestyleAndSleep()
         syncDataToPulseForgeStorage()
         refreshPolicyAndPermissions()
+        checkForUpdates(silent = true)
     }
 
     private fun observeSensorTelemetry() {
@@ -535,9 +536,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Web OTA In-App Update Engine
-    fun checkForUpdates(customUrl: String? = null) {
+    fun checkForUpdates(customUrl: String? = null, silent: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { it.copy(updateState = UpdateState.Checking) }
+            if (!silent) {
+                _uiState.update { it.copy(updateState = UpdateState.Checking) }
+            }
             val manifestUrl = customUrl ?: _uiState.value.updateManifestUrl
             val currentVersionCode = com.pulseforge.app.BuildConfig.VERSION_CODE
 
@@ -546,12 +549,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 onSuccess = { manifest ->
                     if (manifest != null) {
                         _uiState.update { it.copy(updateState = UpdateState.UpdateAvailable(manifest)) }
-                    } else {
+                    } else if (!silent) {
                         _uiState.update { it.copy(updateState = UpdateState.UpToDate) }
                     }
                 },
                 onFailure = { error ->
-                    _uiState.update { it.copy(updateState = UpdateState.Error(error.message ?: "Failed to check update")) }
+                    if (!silent) {
+                        _uiState.update { it.copy(updateState = UpdateState.Error(error.message ?: "Failed to check update")) }
+                    }
                 }
             )
         }
