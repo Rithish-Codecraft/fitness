@@ -1,11 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Activity,
   BarChart3,
+  Copy,
   Droplets,
   Dumbbell,
   Flame,
   Home,
+  LogOut,
   Palette,
   Plus,
   Settings,
@@ -32,81 +34,98 @@ import { useWebTelemetry } from './hooks/useWebTelemetry';
 import { TelemetryCard } from './components/TelemetryCard';
 import { LifestyleSleepCard, StorageSyncCard } from './components/StorageAndLifestyleCards';
 import { VersionSyncModal } from './components/VersionSyncModal';
+import { AuthScreen } from './components/AuthScreen';
+import { PersonalWizard } from './components/PersonalWizard';
+import {
+  AuthAccount,
+  UserDataBundle,
+  completePersonalWizard,
+  createMultiDeviceSyncKey,
+  deleteAccountData,
+  getActiveSession,
+  loadUserData,
+  logoutAccount,
+  saveUserData
+} from './auth/authManager';
 
 type TabId = 'dashboard' | 'nutrition' | 'workout' | 'progress' | 'settings';
 
-const STORAGE_KEY = 'pulseforge_ai_web_state_v1';
-
-const DEFAULT_PROFILE: UserProfile = {
-  id: 'default-athlete',
-  name: 'Mitchell',
-  age: 25,
-  gender: 'MALE',
-  heightCm: 175,
-  currentWeightKg: 72,
-  targetWeightKg: 76,
-  targetTimelineWeeks: 12,
-  primaryGoal: 'MUSCLE_GAIN',
-  activityLevel: 'MODERATE',
-  tdeeKcal: 2350,
-  targetKcal: 2650,
-  targetProteinG: 160,
-  targetCarbsG: 320,
-  targetFatG: 75,
-  waterTargetMl: 3000,
-  waterConsumedMl: 0,
-  activeTheme: 'POWER',
-  isDarkMode: true
-};
-
-const EMPTY_LIFESTYLE: LifestyleSleepAnalysis = {
-  dailyScreenTimeMinutes: 0,
-  nightScreenTimeMinutes: 0,
-  mostUsedNightApp: '-',
-  mostUsedNightAppMinutes: 0,
-  estimatedBedtime: '-',
-  estimatedWakeTime: '-',
-  estimatedSleepDurationHours: null,
-  sleepQualityScore: null,
-  sleepDisruptionFeedback: '',
-  sourceNote: 'Web'
-};
-
-interface PersistedState {
-  profile: UserProfile;
-  foods: FoodItem[];
-  workouts: WorkoutSession[];
-  lifestyle: LifestyleSleepAnalysis;
-  lastSync: string;
-}
-
-function loadInitialState(): PersistedState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      return JSON.parse(raw) as PersistedState;
-    }
-  } catch {
-    // ignore storage errors
-  }
+function makeDefaultBundle(account: AuthAccount): UserDataBundle {
   return {
-    profile: DEFAULT_PROFILE,
+    profile: {
+      id: account.userId,
+      name: account.fullName,
+      age: 25,
+      gender: 'MALE',
+      heightCm: 175,
+      currentWeightKg: 72,
+      targetWeightKg: 76,
+      targetTimelineWeeks: 12,
+      primaryGoal: 'MUSCLE_GAIN',
+      activityLevel: 'MODERATE',
+      tdeeKcal: 2350,
+      targetKcal: 2650,
+      targetProteinG: 160,
+      targetCarbsG: 320,
+      targetFatG: 75,
+      waterTargetMl: 3000,
+      waterConsumedMl: 0,
+      activeTheme: 'POWER',
+      isDarkMode: true
+    },
     foods: [],
     workouts: [],
-    lifestyle: EMPTY_LIFESTYLE,
+    lifestyle: {
+      dailyScreenTimeMinutes: 0,
+      nightScreenTimeMinutes: 0,
+      mostUsedNightApp: '-',
+      mostUsedNightAppMinutes: 0,
+      estimatedBedtime: '-',
+      estimatedWakeTime: '-',
+      estimatedSleepDurationHours: null,
+      sleepQualityScore: null,
+      sleepDisruptionFeedback: '',
+      sourceNote: 'Web'
+    },
     lastSync: '-'
   };
 }
 
 export const App: React.FC = () => {
-  const initial = useMemo(() => loadInitialState(), []);
+  const initialSession = getActiveSession();
+  const [account, setAccount] = useState<AuthAccount | null>(initialSession.account);
+  const [needsWizard, setNeedsWizard] = useState<boolean>(initialSession.needsWizard);
+
+  const initialBundle: UserDataBundle | null = initialSession.account
+    ? loadUserData(initialSession.account.userId, makeDefaultBundle(initialSession.account))
+    : null;
+
   const [tab, setTab] = useState<TabId>('dashboard');
-  const [profile, setProfile] = useState<UserProfile>(initial.profile);
-  const [foods, setFoods] = useState<FoodItem[]>(initial.foods);
-  const [workouts, setWorkouts] = useState<WorkoutSession[]>(initial.workouts);
-  const [lifestyle, setLifestyle] = useState<LifestyleSleepAnalysis>(initial.lifestyle);
-  const [lastSync, setLastSync] = useState<string>(initial.lastSync);
+  const [profile, setProfile] = useState<UserProfile>(
+    initialBundle?.profile ??
+      makeDefaultBundle({
+        userId: 'PF-000000',
+        fullName: '',
+        email: '',
+        passwordHash: '',
+        createdAt: ''
+      }).profile
+  );
+  const [foods, setFoods] = useState<FoodItem[]>(initialBundle?.foods ?? []);
+  const [workouts, setWorkouts] = useState<WorkoutSession[]>(initialBundle?.workouts ?? []);
+  const [lifestyle, setLifestyle] = useState<LifestyleSleepAnalysis>(
+    initialBundle?.lifestyle ??
+      makeDefaultBundle({
+        userId: 'PF-000000',
+        fullName: '',
+        email: '',
+        passwordHash: '',
+        createdAt: ''
+      }).lifestyle
+  );
+  const [lastSync, setLastSync] = useState<string>(initialBundle?.lastSync ?? '-');
   const [versionModalOpen, setVersionModalOpen] = useState(false);
+  const [syncCopiedMsg, setSyncCopiedMsg] = useState<string | null>(null);
 
   const { telemetry, gpsActive, gpsError, enableBrowserGps, importTelemetrySnapshot } =
     useWebTelemetry();
@@ -118,24 +137,46 @@ export const App: React.FC = () => {
     document.documentElement.setAttribute('data-theme', profile.activeTheme);
   }, [profile.activeTheme]);
 
-  // Persist to localStorage automatically
+  // Persist strictly isolated per-user data whenever logged in
   useEffect(() => {
-    const payload: PersistedState = {
+    if (!account) return;
+    saveUserData(account.userId, {
       profile,
       foods,
       workouts,
       lifestyle,
       lastSync
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  }, [profile, foods, workouts, lifestyle, lastSync]);
+    });
+  }, [account, profile, foods, workouts, lifestyle, lastSync]);
 
-  // Nutrition totals for today
-  const todayFoods = foods.filter((f) => f.date === today);
-  const consumedKcal = todayFoods.reduce((acc, f) => acc + f.calories, 0);
-  const consumedP = todayFoods.reduce((acc, f) => acc + f.proteinG, 0);
-  const consumedC = todayFoods.reduce((acc, f) => acc + f.carbsG, 0);
-  const consumedF = todayFoods.reduce((acc, f) => acc + f.fatG, 0);
+  const handleAuthenticated = (
+    nextAccount: AuthAccount,
+    isNewSignUp: boolean,
+    importedData?: Partial<UserDataBundle>
+  ) => {
+    const defaults = makeDefaultBundle(nextAccount);
+    const loaded = loadUserData(nextAccount.userId, defaults);
+    const mergedProfile: UserProfile = {
+      ...loaded.profile,
+      ...(importedData?.profile ?? {}),
+      id: nextAccount.userId,
+      name: nextAccount.fullName
+    };
+    setProfile(mergedProfile);
+    setFoods(importedData?.foods ?? loaded.foods);
+    setWorkouts(importedData?.workouts ?? loaded.workouts);
+    setLifestyle(importedData?.lifestyle ?? loaded.lifestyle);
+    setLastSync(importedData?.lastSync ?? loaded.lastSync);
+    setAccount(nextAccount);
+    setNeedsWizard(isNewSignUp);
+    setTab('dashboard');
+  };
+
+  const handleLogout = () => {
+    logoutAccount();
+    setAccount(null);
+    setNeedsWizard(false);
+  };
 
   // Manual food form state
   const [mealType, setMealType] = useState<MealType>('LUNCH');
@@ -144,6 +185,45 @@ export const App: React.FC = () => {
   const [foodP, setFoodP] = useState('');
   const [foodC, setFoodC] = useState('');
   const [foodF, setFoodF] = useState('');
+
+  // Manual workout form state
+  const [workoutTitle, setWorkoutTitle] = useState('');
+  const [exerciseName, setExerciseName] = useState('');
+  const [weightKg, setWeightKg] = useState('');
+  const [reps, setReps] = useState('');
+  const [durationMin, setDurationMin] = useState('45');
+
+  // Gate 1: Always require Sign In / Sign Up if no active session
+  if (!account) {
+    return (
+      <AuthScreen
+        versionName={__APP_VERSION_MANIFEST__.versionName}
+        versionCode={__APP_VERSION_MANIFEST__.versionCode}
+        onAuthenticated={handleAuthenticated}
+      />
+    );
+  }
+
+  // Gate 2: Complete Personal Details Wizard on brand-new Sign Up
+  if (needsWizard) {
+    return (
+      <PersonalWizard
+        account={account}
+        initialProfile={profile}
+        onComplete={(completedProfile) => {
+          setProfile(completedProfile);
+          completePersonalWizard(account.userId);
+          setNeedsWizard(false);
+        }}
+      />
+    );
+  }
+
+  const todayFoods = foods.filter((f) => f.date === today);
+  const consumedKcal = todayFoods.reduce((acc, f) => acc + f.calories, 0);
+  const consumedP = todayFoods.reduce((acc, f) => acc + f.proteinG, 0);
+  const consumedC = todayFoods.reduce((acc, f) => acc + f.carbsG, 0);
+  const consumedF = todayFoods.reduce((acc, f) => acc + f.fatG, 0);
 
   const addFood = (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,13 +247,6 @@ export const App: React.FC = () => {
     setFoodC('');
     setFoodF('');
   };
-
-  // Manual workout form state
-  const [workoutTitle, setWorkoutTitle] = useState('');
-  const [exerciseName, setExerciseName] = useState('');
-  const [weightKg, setWeightKg] = useState('');
-  const [reps, setReps] = useState('');
-  const [durationMin, setDurationMin] = useState('45');
 
   const logWorkout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,6 +292,7 @@ export const App: React.FC = () => {
     const bundle = {
       exportedAt: new Date().toISOString(),
       version: __APP_VERSION_MANIFEST__,
+      authAccount: account,
       userProfile: profile,
       dailyNutrition: {
         date: today,
@@ -234,7 +308,7 @@ export const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `pulseforge_backup_${today}.json`;
+    a.download = `pulseforge_${account.userId}_${today}.json`;
     a.click();
     URL.revokeObjectURL(url);
     setLastSync(new Date().toLocaleTimeString());
@@ -244,7 +318,7 @@ export const App: React.FC = () => {
     try {
       const text = await file.text();
       const parsed = JSON.parse(text);
-      if (parsed.userProfile) setProfile((prev) => ({ ...prev, ...parsed.userProfile }));
+      if (parsed.userProfile) setProfile((prev) => ({ ...prev, ...parsed.userProfile, id: account.userId }));
       if (parsed.dailyScreenTimeMinutes !== undefined || parsed.nightScreenTimeMinutes !== undefined) {
         setLifestyle((prev) => ({ ...prev, ...parsed }));
       }
@@ -276,6 +350,18 @@ export const App: React.FC = () => {
     }
   };
 
+  const copySyncKey = async () => {
+    const key = createMultiDeviceSyncKey(account, {
+      profile,
+      foods,
+      workouts,
+      lifestyle,
+      lastSync
+    });
+    await navigator.clipboard.writeText(key);
+    setSyncCopiedMsg('Multi-Device Sync Key copied! Paste it under "Sync Device" on any browser.');
+  };
+
   const targetsCalc = calculateTargets(profile);
 
   return (
@@ -286,10 +372,10 @@ export const App: React.FC = () => {
           <img src="/app_logo.png" alt="PulseForge AI" className="brand-logo" />
           <div>
             <div style={{ fontSize: 16, fontWeight: 900 }}>
-              Good day, {profile.name}
+              Good day, {account.fullName}
             </div>
             <div style={{ fontSize: 12 }} className="muted">
-              {GOAL_LABELS[profile.primaryGoal]} • {profile.currentWeightKg} kg
+              {account.userId} • {GOAL_LABELS[profile.primaryGoal]} • {profile.currentWeightKg} kg
             </div>
           </div>
         </div>
@@ -305,6 +391,9 @@ export const App: React.FC = () => {
           </button>
           <button className="btn" onClick={() => setTab('settings')} title="Themes & Profile">
             <Palette size={15} />
+          </button>
+          <button className="btn" onClick={handleLogout} title="Sign Out">
+            <LogOut size={15} color="#ef4444" />
           </button>
         </div>
       </header>
@@ -630,7 +719,7 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 5: SETTINGS & THEMES */}
+      {/* TAB 5: SETTINGS, ACCOUNT & THEMES */}
       {tab === 'settings' && (
         <div className="grid-main">
           <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -716,7 +805,23 @@ export const App: React.FC = () => {
           </div>
 
           <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <strong style={{ fontSize: 16 }}>Design Themes &amp; Version Sync</strong>
+            <strong style={{ fontSize: 16 }}>Account Security, Multi-Device Sync &amp; Themes</strong>
+            <div className="sensor-tile">
+              <div style={{ fontSize: 12, fontWeight: 800 }}>
+                Signed in as {account.fullName} ({account.userId})
+              </div>
+              <div style={{ fontSize: 11 }} className="muted">
+                {account.email} • Created {account.createdAt}
+              </div>
+            </div>
+
+            <button className="btn" onClick={copySyncKey}>
+              <Copy size={14} color="#38bdf8" /> Copy Multi-Device Sync Key (`PFKEY`)
+            </button>
+            {syncCopiedMsg && (
+              <div style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>{syncCopiedMsg}</div>
+            )}
+
             <div className="grid-2">
               {(['POWER', 'LAVENDER', 'LONGEVITY', 'WELLNESS'] as ThemePalette[]).map((t) => (
                 <button
@@ -728,9 +833,26 @@ export const App: React.FC = () => {
                 </button>
               ))}
             </div>
+
             <button className="btn" onClick={() => setVersionModalOpen(true)}>
               Open Version Control (v{__APP_VERSION_MANIFEST__.versionName})
             </button>
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn" onClick={handleLogout} style={{ flex: 1 }}>
+                <LogOut size={14} color="#f59e0b" /> Sign Out
+              </button>
+              <button
+                className="btn"
+                style={{ flex: 1 }}
+                onClick={() => {
+                  deleteAccountData(account.userId);
+                  setAccount(null);
+                }}
+              >
+                <Trash2 size={14} color="#ef4444" /> Delete Account
+              </button>
+            </div>
           </div>
         </div>
       )}

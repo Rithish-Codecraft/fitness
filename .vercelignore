@@ -1,0 +1,11 @@
+.gradle
+.idea
+.vscode
+app
+build
+releases
+*.apk
+app_screen.png
+*.md
+web/node_modules
+web/dist
