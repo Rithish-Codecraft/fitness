@@ -5,6 +5,6 @@
   "releaseNotes": "• Supabase Cloud Multi-Device Sync: Unified Postgres user_profiles & user_sync_state with Row-Level Security across Android APK & Web (https://pulseforge.feenixs.com).\n• Sign In with Google (OAuth) + Email/Password: Shared Supabase Auth on both Web and Android (pulseforge://auth/callback).\n• Mandatory Auth Gate & Unified Version Control: Always opens on Sign In / Sign Up with v1.9.0 (Build 22) synced between APK and Web.",
   "isMandatory": false,
   "minSupportedVersion": 1,
-  "fileSizeBytes": 55683840,
-  "sha256": "43F3432BBC0FE5644E95E7F45B2D4B9790E47AA2A0F6DBECBCE21DB4B9843E7D"
+  "fileSizeBytes": 55700408,
+  "sha256": "13D71A0454C2A67A8B9EBE393EB0CED875F6BE6D8E275716B4B1C81575071DF7"
 }
