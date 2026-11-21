@@ -181,10 +181,11 @@ export const LifestyleSleepCard: React.FC<{ analysis: LifestyleSleepAnalysis }> 
               : '-'}
           </span>
         </div>
-        <p style={{ fontSize: 11, marginTop: 8, lineHeight: 1.45 }} className="muted">
-          {analysis.sleepDisruptionFeedback ||
-            'Import pulseforge_lifestyle_sleep.json from Android Documents/PulseForge AI/ to view device screen-time & sleep analysis.'}
-        </p>
+        {analysis.sleepDisruptionFeedback && (
+          <p style={{ fontSize: 11, marginTop: 8, lineHeight: 1.45 }} className="muted">
+            {analysis.sleepDisruptionFeedback}
+          </p>
+        )}
       </div>
     </div>
   );

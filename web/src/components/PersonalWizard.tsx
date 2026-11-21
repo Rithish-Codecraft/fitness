@@ -73,10 +73,6 @@ export const PersonalWizard: React.FC<PersonalWizardProps> = ({
             </div>
           </div>
         </div>
-        <p style={{ fontSize: 12 }} className="muted">
-          Complete your biometric baseline so PulseForge AI can compute your exact BMR, TDEE, and daily macro targets.
-        </p>
-
         <div className="grid-2">
           <div>
             <label style={{ fontSize: 11 }} className="muted">Age</label>

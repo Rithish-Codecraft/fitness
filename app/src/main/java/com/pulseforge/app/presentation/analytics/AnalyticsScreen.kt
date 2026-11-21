@@ -135,17 +135,12 @@ fun AnalyticsScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Text(
-                    text = "Calculated from logged workouts",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 val caloriePoints = sessions.map { it.kcalBurned.toFloat() }.takeLast(7)
                 if (caloriePoints.isEmpty()) {
                     Text(
-                        text = "No workouts logged yet. Log a workout to view session calorie burn.",
+                        text = "No workouts logged yet.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -202,12 +197,7 @@ fun AnalyticsScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                Text(
-                    text = "Logged working sets per target group (Optimal: 10–20 sets)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 MuscleGroup.entries.forEach { muscle ->
                     val sets = setsByMuscle[muscle] ?: 0
@@ -301,7 +291,7 @@ fun AnalyticsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 if (recordings.isEmpty()) {
                     Text(
-                        text = "Daily snapshots are saved automatically to Documents/pulseforce/daily_readings/.",
+                        text = "No daily recordings yet.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

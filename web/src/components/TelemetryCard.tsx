@@ -138,9 +138,6 @@ export const TelemetryCard: React.FC<TelemetryCardProps> = ({
           {gpsActive ? 'Web GPS Active' : 'Enable Web GPS'}
         </button>
       </div>
-      <p style={{ fontSize: 11, marginBottom: 14 }} className="muted">
-        100% real sensor / imported Android Health Connect telemetry • Missing values shown as &quot;-&quot;
-      </p>
       {gpsError && (
         <p style={{ fontSize: 11, color: '#ef4444', marginBottom: 10 }}>
           GPS: {gpsError}

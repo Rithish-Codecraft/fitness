@@ -638,7 +638,7 @@ export const App: React.FC = () => {
             <strong style={{ fontSize: 16 }}>Today&apos;s Meals ({todayFoods.length})</strong>
             {todayFoods.length === 0 ? (
               <p className="muted" style={{ fontSize: 13 }}>
-                No meals logged yet today. Add an entry to calculate real macro adherence.
+                No meals logged yet.
               </p>
             ) : (
               todayFoods.map((item) => (
@@ -655,6 +655,7 @@ export const App: React.FC = () => {
                   </div>
                   <button
                     className="btn"
+                    aria-label="Delete food item"
                     onClick={() => setFoods((prev) => prev.filter((f) => f.id !== item.id))}
                     style={{ padding: 6 }}
                   >
@@ -716,7 +717,7 @@ export const App: React.FC = () => {
             <strong style={{ fontSize: 16 }}>Logged Sessions ({workouts.length})</strong>
             {workouts.length === 0 ? (
               <p className="muted" style={{ fontSize: 13 }}>
-                No workouts logged yet. Log a set to compute volume tonnage and Epley 1RM.
+                No workouts logged yet.
               </p>
             ) : (
               workouts.map((w) => {
