@@ -36,6 +36,7 @@ import { LifestyleSleepCard, StorageSyncCard } from './components/StorageAndLife
 import { VersionSyncModal } from './components/VersionSyncModal';
 import { AuthScreen } from './components/AuthScreen';
 import { PersonalWizard } from './components/PersonalWizard';
+import { LegalPage } from './components/LegalPages';
 import {
   AuthAccount,
   UserDataBundle,
@@ -249,6 +250,19 @@ export const App: React.FC = () => {
   const [weightKg, setWeightKg] = useState('');
   const [reps, setReps] = useState('');
   const [durationMin, setDurationMin] = useState('45');
+
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  if (pathname === '/privacy' || pathname === '/terms') {
+    return (
+      <LegalPage
+        kind={pathname === '/privacy' ? 'privacy' : 'terms'}
+        onBack={() => {
+          window.history.pushState({}, '', '/');
+          window.location.reload();
+        }}
+      />
+    );
+  }
 
   // Gate 1: Always require Sign In / Sign Up if no active session
   if (!account) {
