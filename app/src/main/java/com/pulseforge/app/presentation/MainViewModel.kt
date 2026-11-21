@@ -259,6 +259,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         refreshAuthState()
     }
 
+    fun handleGoogleOAuthUri(uri: android.net.Uri?) {
+        val token = com.pulseforge.app.core.auth.SupabaseAuthManager.extractAccessTokenFromCallback(uri)
+            ?: return
+        viewModelScope.launch {
+            val res = com.pulseforge.app.core.auth.SupabaseAuthManager.fetchUserFromAccessToken(token)
+            res.onSuccess { account ->
+                authManager.setExternalAuthenticatedAccount(account, isNew = false)
+                val updatedProfile = _uiState.value.userProfile.copy(
+                    id = account.userId,
+                    name = account.fullName,
+                    isOnboarded = true
+                )
+                repository.saveUserProfile(updatedProfile)
+                refreshAuthState()
+                syncDataToPulseForgeStorage()
+            }
+        }
+    }
+
     fun signInWithGoogle(googleEmail: String): Result<Pair<com.pulseforge.app.core.auth.AuthAccount, Boolean>> {
         val result = authManager.signInWithGoogle(googleEmail)
         result.onSuccess { (account, isNewUser) ->

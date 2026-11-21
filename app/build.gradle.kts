@@ -12,8 +12,8 @@ android {
         applicationId = "com.pulseforge.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 21
-        versionName = "1.8.21"
+        versionCode = 22
+        versionName = "1.9.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

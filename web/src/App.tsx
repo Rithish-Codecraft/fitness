@@ -47,6 +47,13 @@ import {
   logoutAccount,
   saveUserData
 } from './auth/authManager';
+import {
+  derivePulseForgeId,
+  loadCloudUserState,
+  saveCloudUserState,
+  supabase
+} from './auth/supabaseClient';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 type TabId = 'dashboard' | 'nutrition' | 'workout' | 'progress' | 'settings';
 
@@ -126,28 +133,76 @@ export const App: React.FC = () => {
   const [lastSync, setLastSync] = useState<string>(initialBundle?.lastSync ?? '-');
   const [versionModalOpen, setVersionModalOpen] = useState(false);
   const [syncCopiedMsg, setSyncCopiedMsg] = useState<string | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
 
   const { telemetry, gpsActive, gpsError, enableBrowserGps, importTelemetrySnapshot } =
     useWebTelemetry();
 
   const today = new Date().toISOString().slice(0, 10);
 
+  // Listen for Supabase Auth (Google OAuth & Email/Password) sessions
+  useEffect(() => {
+    const applySupabaseSession = async (user: SupabaseUser | null) => {
+      setSupabaseUser(user);
+      if (!user) return;
+      const cloud = await loadCloudUserState(user);
+      if (cloud.telemetry) {
+        importTelemetrySnapshot(cloud.telemetry);
+      }
+      const displayName =
+        (user.user_metadata?.full_name as string | undefined) ||
+        (user.user_metadata?.name as string | undefined) ||
+        user.email?.split('@')[0] ||
+        'Athlete';
+      const cloudAccount: AuthAccount = {
+        userId: cloud.pulseforgeId || derivePulseForgeId(user.id),
+        fullName: displayName,
+        email: user.email || '',
+        passwordHash: '',
+        createdAt: user.created_at.slice(0, 16).replace('T', ' ')
+      };
+      handleAuthenticated(cloudAccount, cloud.isNewCloudProfile, cloud.bundle ?? undefined);
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) {
+        applySupabaseSession(data.session.user);
+      }
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        applySupabaseSession(session.user);
+      }
+    });
+
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
   // Sync theme attribute to <html>
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', profile.activeTheme);
   }, [profile.activeTheme]);
 
-  // Persist strictly isolated per-user data whenever logged in
+  // Persist strictly isolated per-user data locally + to Supabase Cloud when signed in
   useEffect(() => {
     if (!account) return;
-    saveUserData(account.userId, {
+    const bundle: UserDataBundle = {
       profile,
       foods,
       workouts,
       lifestyle,
       lastSync
-    });
-  }, [account, profile, foods, workouts, lifestyle, lastSync]);
+    };
+    saveUserData(account.userId, bundle);
+
+    if (supabaseUser && !needsWizard) {
+      const timer = setTimeout(() => {
+        saveCloudUserState(supabaseUser, account.userId, bundle, telemetry).catch(() => {});
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [account, supabaseUser, needsWizard, profile, foods, workouts, lifestyle, lastSync, telemetry]);
 
   const handleAuthenticated = (
     nextAccount: AuthAccount,
@@ -172,8 +227,10 @@ export const App: React.FC = () => {
     setTab('dashboard');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut().catch(() => {});
     logoutAccount();
+    setSupabaseUser(null);
     setAccount(null);
     setNeedsWizard(false);
   };

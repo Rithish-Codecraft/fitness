@@ -1,8 +1,8 @@
 {
-  "versionCode": 21,
-  "versionName": "1.8.21",
+  "versionCode": 22,
+  "versionName": "1.9.0",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Structured pulseforce/ Storage Tree: Organizes all user data into Documents/pulseforce/ (profile, daily_readings, nutrition, workouts, telemetry, sleep_lifestyle).\n• Multi-Day Recordings History: Automatically records and preserves dated daily snapshots & multi_day_history.json across multiple days.\n• Continue with Google Sign-In: Added native Android Google account picker + fallback email flow on the Welcome/Login screen.",
+  "releaseNotes": "• Supabase Cloud Multi-Device Sync: Unified Postgres user_profiles & user_sync_state with Row-Level Security across Android APK & Web (https://pulseforge.feenixs.com).\n• Sign In with Google (OAuth) + Email/Password: Shared Supabase Auth on both Web and Android (pulseforge://auth/callback).\n• Mandatory Auth Gate & Unified Version Control: Always opens on Sign In / Sign Up with v1.9.0 (Build 22) synced between APK and Web.",
   "isMandatory": false,
   "minSupportedVersion": 1,
   "fileSizeBytes": 55683840,

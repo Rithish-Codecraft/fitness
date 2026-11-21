@@ -118,6 +118,16 @@ class AuthAccountManager(context: Context) {
         prefs.edit().putBoolean(KEY_NEEDS_WIZARD, false).apply()
     }
 
+    fun setExternalAuthenticatedAccount(account: AuthAccount, isNew: Boolean) {
+        val accounts = getAccounts().filterNot { it.userId == account.userId }.toMutableList()
+        accounts.add(account)
+        saveAccounts(accounts)
+        prefs.edit()
+            .putString(KEY_ACTIVE_USER_ID, account.userId)
+            .putBoolean(KEY_NEEDS_WIZARD, isNew)
+            .apply()
+    }
+
     fun signInWithGoogle(googleEmail: String): Result<Pair<AuthAccount, Boolean>> {
         val cleanEmail = googleEmail.trim().lowercase()
         if (cleanEmail.isBlank() || !cleanEmail.contains("@")) {

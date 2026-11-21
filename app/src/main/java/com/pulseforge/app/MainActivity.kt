@@ -586,8 +586,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        viewModel.handleGoogleOAuthUri(intent.data)
+    }
+
     override fun onResume() {
         super.onResume()
+        viewModel.handleGoogleOAuthUri(intent?.data)
         val hasCam = ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.CAMERA

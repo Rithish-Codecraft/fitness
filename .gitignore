@@ -12,3 +12,6 @@ app/build/
 !releases/app-release.apk
 web/node_modules/
 web/dist/
+
+.vercel
+.env*
