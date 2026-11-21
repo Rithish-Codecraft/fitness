@@ -1,10 +1,10 @@
 {
-  "versionCode": 20,
-  "versionName": "1.8.20",
+  "versionCode": 21,
+  "versionName": "1.8.21",
   "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
-  "releaseNotes": "• Clean Single-Line Buttons & Copy: Removed multi-line/paragraph descriptions on and under buttons across Lifestyle, Storage, Policy, Dashboard, and Settings.\n• Anti-Squeeze Layout Fixes: Added weighted columns, ellipsis overflow, and non-wrapping badges across telemetry, storage, and app usage chips.",
+  "releaseNotes": "• Structured pulseforce/ Storage Tree: Organizes all user data into Documents/pulseforce/ (profile, daily_readings, nutrition, workouts, telemetry, sleep_lifestyle).\n• Multi-Day Recordings History: Automatically records and preserves dated daily snapshots & multi_day_history.json across multiple days.\n• Continue with Google Sign-In: Added native Android Google account picker + fallback email flow on the Welcome/Login screen.",
   "isMandatory": false,
   "minSupportedVersion": 1,
   "fileSizeBytes": 55683840,
-  "sha256": "472FCDD5C7CD9351713C0EF82F0F54FA302C03AC43A68EAAC7E6354F46DA8269"
+  "sha256": "43F3432BBC0FE5644E95E7F45B2D4B9790E47AA2A0F6DBECBCE21DB4B9843E7D"
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, KeyRound, Lock, Mail, ShieldCheck, Smartphone, User, UserPlus } from 'lucide-react';
+import { Eye, EyeOff, KeyRound, Lock, Mail, Smartphone, User, UserPlus } from 'lucide-react';
 import {
   AuthAccount,
   UserDataBundle,
@@ -21,8 +21,6 @@ interface AuthScreenProps {
 type Mode = 'LOGIN' | 'SIGNUP' | 'SYNC';
 
 export const AuthScreen: React.FC<AuthScreenProps> = ({
-  versionName,
-  versionCode,
   onAuthenticated
 }) => {
   const [mode, setMode] = useState<Mode>('LOGIN');
@@ -107,23 +105,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             }}
           />
           <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: 0.5 }}>PULSEFORGE AI</h1>
-          <p style={{ fontSize: 11, letterSpacing: 1.5, marginTop: 4 }} className="muted">
-            FITNESS • NUTRITION • PROGRESS
-          </p>
-          <div style={{ marginTop: 8 }}>
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                padding: '3px 10px',
-                borderRadius: 999,
-                background: '#10b98122',
-                color: '#10b981'
-              }}
-            >
-              v{versionName} (Build {versionCode}) • Multi-Device Account Portal
-            </span>
-          </div>
         </div>
 
         {/* Mode Switcher */}
@@ -176,17 +157,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {mode === 'SIGNUP' && (
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, display: 'block', marginBottom: 4 }} className="muted">
+              <label style={{ fontSize: 14, fontWeight: 600, display: 'block', marginBottom: 6 }}>
                 Full Name
               </label>
               <div style={{ position: 'relative' }}>
                 <User
                   size={15}
-                  style={{ position: 'absolute', left: 12, top: 12, opacity: 0.55 }}
+                  style={{ position: 'absolute', left: 12, top: 13, opacity: 0.55 }}
                 />
                 <input
                   className="input"
-                  style={{ paddingLeft: 36 }}
+                  style={{ paddingLeft: 40, fontSize: 14 }}
                   placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -198,18 +179,18 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           {mode !== 'SYNC' ? (
             <>
               <div>
-                <label style={{ fontSize: 11, fontWeight: 700, display: 'block', marginBottom: 4 }} className="muted">
+                <label style={{ fontSize: 14, fontWeight: 600, display: 'block', marginBottom: 6 }}>
                   {mode === 'SIGNUP' ? 'Email or Phone' : 'Email or PulseForge ID (PF-XXXXXX)'}
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Mail
                     size={15}
-                    style={{ position: 'absolute', left: 12, top: 12, opacity: 0.55 }}
+                    style={{ position: 'absolute', left: 12, top: 13, opacity: 0.55 }}
                   />
                   <input
                     className="input"
-                    style={{ paddingLeft: 36 }}
-                    placeholder={mode === 'SIGNUP' ? 'athlete@domain.com' : 'email or PF-123456'}
+                    style={{ paddingLeft: 40, fontSize: 14 }}
+                    placeholder={mode === 'SIGNUP' ? 'athlete@domain.com' : ''}
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                   />
@@ -217,18 +198,18 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               </div>
 
               <div>
-                <label style={{ fontSize: 11, fontWeight: 700, display: 'block', marginBottom: 4 }} className="muted">
+                <label style={{ fontSize: 14, fontWeight: 600, display: 'block', marginBottom: 6 }}>
                   Password
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Lock
                     size={15}
-                    style={{ position: 'absolute', left: 12, top: 12, opacity: 0.55 }}
+                    style={{ position: 'absolute', left: 12, top: 13, opacity: 0.55 }}
                   />
                   <input
                     className="input"
                     type={showPassword ? 'text' : 'password'}
-                    style={{ paddingLeft: 36, paddingRight: 38 }}
+                    style={{ paddingLeft: 40, paddingRight: 38, fontSize: 14 }}
                     placeholder="Minimum 6 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -325,7 +306,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             </div>
           )}
 
-          <button className="btn btn-primary" type="submit" disabled={busy} style={{ padding: 12, fontSize: 13 }}>
+          <button className="btn btn-primary" type="submit" disabled={busy} style={{ padding: 12, fontSize: 14 }}>
             <KeyRound size={15} />
             {mode === 'LOGIN'
               ? 'Sign In to My Account'
@@ -334,24 +315,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 : 'Restore & Sign In on This Device'}
           </button>
         </form>
-
-        <div
-          style={{
-            marginTop: 16,
-            paddingTop: 14,
-            borderTop: '1px solid var(--border)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            fontSize: 11
-          }}
-          className="muted"
-        >
-          <ShieldCheck size={16} color="#10b981" />
-          <span>
-            Each user account is strictly isolated by PulseForge User ID (`PF-XXXXXX`) with SHA-256 credential hashing.
-          </span>
-        </div>
       </div>
 
       {showPolicyModal && (

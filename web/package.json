@@ -1,7 +1,7 @@
 {
   "name": "pulseforge-ai-web",
   "private": true,
-  "version": "1.8.20",
+  "version": "1.8.21",
   "type": "module",
   "scripts": {
     "sync-version": "node -e \"const fs=require('fs');const v=JSON.parse(fs.readFileSync('../version.json','utf8'));fs.copyFileSync('../version.json','public/version.json');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=v.versionName;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\\n');\"",
