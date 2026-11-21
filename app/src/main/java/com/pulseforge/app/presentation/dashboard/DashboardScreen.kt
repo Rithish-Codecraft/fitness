@@ -317,7 +317,7 @@ fun DashboardScreen(
                 // CLEAN REAL-DATA DASHBOARD LAYOUT
                 item {
                     DailyGoalHeroCard(
-                        percentText = "You're ${percentInt.coerceIn(0, 100)}% to your daily calorie goal",
+                        percentText = "Daily Goal: ${percentInt.coerceIn(0, 100)}%",
                         currentVal = "${nutrition.consumedCalories.toInt()}",
                         targetVal = "${nutrition.targetCalories}",
                         progress = calProgress.coerceIn(0f, 1f),

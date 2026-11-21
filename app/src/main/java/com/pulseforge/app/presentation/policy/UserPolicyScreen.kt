@@ -139,18 +139,17 @@ fun UserPolicyScreen(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     val commitments = listOf(
-                        "1. On-Device Processing: Fitness telemetry, nutrition OCR, and sleep hygiene analytics run locally on your device. No personal health data is sold or shared with ad networks.",
-                        "2. Health Connect Limited Use: Read-only Health Connect permissions (Steps, Distance, Speed, Elevation, Calories, Sleep, Exercise) are used solely to compute your adaptive coaching insights.",
-                        "3. Minimal Runtime Permissions: Camera, Location, Activity Recognition, and Body Sensors are requested only for their explicit user-facing features and can be revoked anytime in Android Settings.",
-                        "4. User-Owned Storage: JSON exports in Documents/PulseForge AI belong to you. You can delete or revoke storage access at any time."
+                        "• On-device processing only; no third-party ad tracking.",
+                        "• Health Connect (read-only) used solely for coaching.",
+                        "• Runtime permissions can be revoked anytime in Settings.",
+                        "• JSON backups in Documents/PulseForge AI belong to you."
                     )
                     commitments.forEach { line ->
                         Text(
                             text = line,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = 18.sp,
-                            modifier = Modifier.padding(bottom = 6.dp)
+                            modifier = Modifier.padding(bottom = 4.dp)
                         )
                     }
 
@@ -163,13 +162,15 @@ fun UserPolicyScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Accepted on ${policyState.acceptedTimestamp ?: "this device"}",
+                                text = "Accepted (${policyState.acceptedTimestamp ?: "Active"})",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = Color(0xFF2ED573),
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.weight(1f),
+                                maxLines = 1
                             )
                             TextButton(onClick = onRevokePolicy) {
-                                Text("Revoke Consent")
+                                Text("Revoke", maxLines = 1, softWrap = false)
                             }
                         }
                     } else {
@@ -180,7 +181,7 @@ fun UserPolicyScreen(
                         ) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Accept Updated User Policy (v${policyState.policyVersion})")
+                            Text("Accept Policy (v${policyState.policyVersion})", maxLines = 1, softWrap = false)
                         }
                     }
                 }
@@ -214,20 +215,9 @@ fun UserPolicyScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    Text(
-                        text = "When installed outside Google Play (APK / OTA), Android 13+ protects sensitive settings like Usage Access with \"Restricted setting\". Follow Google's steps to allow access:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 18.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     val steps = listOf(
-                        "Step 1: Tap \"Open Usage Access\" first so Android registers the restricted setting prompt.",
-                        "Step 2: Tap \"Open App Info\" below to open PulseForge AI settings.",
-                        "Step 3: Tap the ⋮ (More options) menu in the top-right corner -> Allow restricted settings, and confirm with your PIN/biometric.",
-                        "Step 4: Return to Usage Access and toggle PulseForge AI ON."
+                        "1. Open App Info -> ⋮ (top-right) -> Allow restricted settings.",
+                        "2. Open Usage Access -> enable PulseForge AI."
                     )
                     steps.forEach { step ->
                         Text(
@@ -249,14 +239,14 @@ fun UserPolicyScreen(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Open Usage Access", fontSize = 12.sp)
+                            Text("Usage Access", fontSize = 12.sp, maxLines = 1, softWrap = false)
                         }
                         OutlinedButton(
                             onClick = onOpenAppInfoSettings,
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Open App Info", fontSize = 12.sp)
+                            Text("App Info", fontSize = 12.sp, maxLines = 1, softWrap = false)
                         }
                     }
 
@@ -388,7 +378,7 @@ private fun PermissionAccessRowCard(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Step 1: Open App Info (Allow Restricted Settings)")
+                        Text("Open App Info", maxLines = 1, softWrap = false)
                     }
                 }
                 OutlinedButton(
@@ -398,14 +388,12 @@ private fun PermissionAccessRowCard(
                 ) {
                     Text(
                         text = when (item.category) {
-                            AccessCategory.RUNTIME -> "Grant Permission"
-                            AccessCategory.HEALTH_CONNECT -> "Grant Health Connect Access"
-                            AccessCategory.SPECIAL_RESTRICTED -> if (item.id == "usage_access") {
-                                "Step 2: Open Usage Access Settings"
-                            } else {
-                                "Open Android Settings"
-                            }
-                        }
+                            AccessCategory.RUNTIME -> "Grant"
+                            AccessCategory.HEALTH_CONNECT -> "Grant Health Connect"
+                            AccessCategory.SPECIAL_RESTRICTED -> "Open Settings"
+                        },
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }

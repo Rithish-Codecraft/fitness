@@ -246,7 +246,10 @@ fun LivePhoneSensorsTelemetryCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .size(34.dp)
@@ -331,7 +334,8 @@ private fun SensorTile(
                     fontSize = 11.sp,
                     color = Color.White.copy(alpha = 0.72f),
                     fontWeight = FontWeight.SemiBold,
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))

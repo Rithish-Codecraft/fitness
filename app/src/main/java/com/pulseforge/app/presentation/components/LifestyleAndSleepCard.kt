@@ -109,28 +109,12 @@ fun LifestyleAndSleepCard(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Security,
-                                contentDescription = "Security",
-                                tint = Color(0xFFFF7675),
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = "Android Usage Access Required",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
                         Text(
-                            text = "Enable Usage Access for real screen time & sleep tracking. If greyed out: App Info -> ⋮ -> Allow restricted settings.",
-                            fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.7f),
-                            lineHeight = 16.sp
+                            text = "Usage Access Required",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1
                         )
                         Button(
                             onClick = onOpenUsageSettings,
@@ -139,10 +123,12 @@ fun LifestyleAndSleepCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Step 1: Open Usage Access",
+                                text = "Open Usage Access",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = Color.White,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                         OutlinedButton(
@@ -152,10 +138,12 @@ fun LifestyleAndSleepCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Step 2: Toggle Greyed Out? Allow Restricted Settings",
+                                text = "Allow Restricted Settings",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFFFA502)
+                                color = Color(0xFFFFA502),
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }
@@ -339,6 +327,7 @@ fun LifestyleAndSleepCard(
                         ) {
                             analysis.topDayApps.take(3).forEach { app ->
                                 Surface(
+                                    modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(12.dp),
                                     color = Color(0xFF1E2130),
                                     border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2E3245))
@@ -352,12 +341,17 @@ fun LifestyleAndSleepCard(
                                             text = app.appName,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = Color.White
+                                            color = Color.White,
+                                            modifier = Modifier.weight(1f),
+                                            maxLines = 1,
+                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                         )
                                         Text(
                                             text = "${app.totalTimeMinutes}m",
                                             fontSize = 10.sp,
-                                            color = Color(0xFFA29BFE)
+                                            color = Color(0xFFA29BFE),
+                                            maxLines = 1,
+                                            softWrap = false
                                         )
                                     }
                                 }

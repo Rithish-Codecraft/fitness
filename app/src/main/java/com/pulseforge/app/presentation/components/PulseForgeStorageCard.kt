@@ -181,10 +181,12 @@ fun PulseForgeStorageCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "Sync & Export All Data to PulseForge AI Folder",
+                        text = "Sync & Export Data",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = Color.White,
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }
@@ -281,7 +283,8 @@ private fun CapabilityPill(
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isActive) Color(0xFF2ED573) else Color(0xFFFF6B6B),
-                maxLines = 1
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
     }

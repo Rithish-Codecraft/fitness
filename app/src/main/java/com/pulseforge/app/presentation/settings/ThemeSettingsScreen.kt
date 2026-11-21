@@ -117,7 +117,7 @@ fun ThemeSettingsScreen(
         item {
             SectionHeader(
                 title = "UI Themes & Aesthetics",
-                subtitle = "Choose an atmospheric color scheme tailored to your training vibe"
+                subtitle = "Color palettes & dark mode"
             )
         }
 
@@ -205,9 +205,9 @@ fun ThemeSettingsScreen(
                             )
                             Text(
                                 text = if (policyState.isPolicyAccepted) {
-                                    "v${policyState.policyVersion} Accepted • ${policyState.grantedCount}/${policyState.totalApplicableCount} permissions granted"
+                                    "v${policyState.policyVersion} • ${policyState.grantedCount}/${policyState.totalApplicableCount} granted"
                                 } else {
-                                    "Review privacy policy, restricted settings & permissions"
+                                    "Permissions & policy status"
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -221,7 +221,7 @@ fun ThemeSettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("View Policy & Grant Access")
+                    Text("Open Access Center", maxLines = 1, softWrap = false)
                 }
             }
         }
