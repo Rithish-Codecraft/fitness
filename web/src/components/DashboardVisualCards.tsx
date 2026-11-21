@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, CloudSync, Droplets, Dumbbell, Flame, Footprints, Timer, Utensils, Zap } from 'lucide-react';
+import { Calendar, Droplets, Dumbbell, Flame, Footprints, RefreshCw, Timer, Utensils, Zap } from 'lucide-react';
 
 interface DailyGoalHeroProps {
   consumedKcal: number;
@@ -68,7 +68,7 @@ export const QuickActionsRow: React.FC<QuickActionsRowProps> = ({
     { label: 'Workout', icon: <Dumbbell size={18} />, color: 'var(--text)', onClick: onWorkout },
     { label: 'Meal', icon: <Utensils size={18} />, color: 'var(--text)', onClick: onMeal },
     { label: 'Water', icon: <Droplets size={18} />, color: '#38bdf8', onClick: onWater },
-    { label: 'Sync', icon: <CloudSync size={18} />, color: 'var(--accent)', onClick: onSync }
+    { label: 'Sync', icon: <RefreshCw size={18} />, color: 'var(--accent)', onClick: onSync }
   ];
 
   return (
