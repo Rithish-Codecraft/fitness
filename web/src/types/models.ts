@@ -53,6 +53,7 @@ export interface ExerciseLog {
   id: string;
   exerciseName: string;
   muscleGroup: string;
+  equipmentType?: string;
   sets: ExerciseSet[];
 }
 
@@ -61,8 +62,16 @@ export interface WorkoutSession {
   date: string;
   title: string;
   durationMinutes: number;
+  kcalBurned?: number;
   exercises: ExerciseLog[];
   notes: string;
+}
+
+export interface DailyRecording {
+  date: string;
+  steps: number;
+  caloriesConsumed: number;
+  waterMl: number;
 }
 
 export interface GpsWaypoint {

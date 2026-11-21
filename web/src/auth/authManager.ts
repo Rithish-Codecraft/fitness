@@ -1,4 +1,10 @@
-import { FoodItem, LifestyleSleepAnalysis, UserProfile, WorkoutSession } from '../types/models';
+import {
+  DailyRecording,
+  FoodItem,
+  LifestyleSleepAnalysis,
+  UserProfile,
+  WorkoutSession
+} from '../types/models';
 
 export interface AuthAccount {
   userId: string;
@@ -13,6 +19,7 @@ export interface UserDataBundle {
   foods: FoodItem[];
   workouts: WorkoutSession[];
   lifestyle: LifestyleSleepAnalysis;
+  dailyRecordings?: DailyRecording[];
   lastSync: string;
 }
 

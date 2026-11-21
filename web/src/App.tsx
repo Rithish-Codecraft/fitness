@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import {
   ActivityLevel,
+  DailyRecording,
   FoodItem,
   GoalType,
   LifestyleSleepAnalysis,
@@ -42,6 +43,11 @@ import {
 import { VersionSyncModal } from './components/VersionSyncModal';
 import { AuthScreen } from './components/AuthScreen';
 import { PersonalWizard } from './components/PersonalWizard';
+import {
+  EQUIPMENT_TYPES,
+  MUSCLE_GROUPS,
+  ProgressAnalyticsTab
+} from './components/ProgressAnalyticsTab';
 import { LegalPage } from './components/LegalPages';
 import {
   AuthAccount,
@@ -228,6 +234,7 @@ export const App: React.FC = () => {
     setFoods(importedData?.foods ?? loaded.foods);
     setWorkouts(importedData?.workouts ?? loaded.workouts);
     setLifestyle(importedData?.lifestyle ?? loaded.lifestyle);
+    setDailyRecordings(importedData?.dailyRecordings ?? loaded.dailyRecordings ?? []);
     setLastSync(importedData?.lastSync ?? loaded.lastSync);
     setAccount(nextAccount);
     setNeedsWizard(isNewSignUp);
@@ -253,11 +260,14 @@ export const App: React.FC = () => {
   // Manual workout form state
   const [workoutTitle, setWorkoutTitle] = useState('');
   const [exerciseName, setExerciseName] = useState('');
-  const muscleGroup = 'CHEST';
-  const equipmentType = 'BARBELL';
+  const [muscleGroup, setMuscleGroup] = useState<string>(MUSCLE_GROUPS[0]);
+  const [equipmentType, setEquipmentType] = useState<string>(EQUIPMENT_TYPES[0]);
   const [weightKg, setWeightKg] = useState('');
   const [reps, setReps] = useState('');
   const [durationMin, setDurationMin] = useState('45');
+  const [dailyRecordings] = useState<DailyRecording[]>(
+    initialBundle?.dailyRecordings ?? []
+  );
 
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
   if (pathname === '/privacy' || pathname === '/terms') {
