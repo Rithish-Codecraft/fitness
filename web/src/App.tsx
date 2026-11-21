@@ -33,6 +33,13 @@ import {
 import { useWebTelemetry } from './hooks/useWebTelemetry';
 import { TelemetryCard } from './components/TelemetryCard';
 import { LifestyleSleepCard, StorageSyncCard } from './components/StorageAndLifestyleCards';
+import {
+  ArchVaultTrioCard,
+  DailyGoalHeroCard,
+  DailySummaryCard,
+  QuickActionsRow,
+  ScheduledDietTachometerCard
+} from './components/DashboardVisualCards';
 import { VersionSyncModal } from './components/VersionSyncModal';
 import { AuthScreen } from './components/AuthScreen';
 import { PersonalWizard } from './components/PersonalWizard';
@@ -483,54 +490,50 @@ export const App: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* Daily Macros Card */}
-            <div className="card">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 12
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Flame size={18} color="#e85b37" />
-                  <strong style={{ fontSize: 15 }}>Daily Nutrition Budget</strong>
-                </div>
-                <button className="btn" onClick={() => setTab('nutrition')}>
-                  + Log Meal
-                </button>
-              </div>
-              <div style={{ fontSize: 24, fontWeight: 900 }}>
-                {Math.round(consumedKcal)} / {profile.targetKcal}{' '}
-                <span style={{ fontSize: 12 }} className="muted">
-                  kcal
-                </span>
-              </div>
-              <div className="progress-track" style={{ margin: '10px 0 12px' }}>
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${Math.min(100, (consumedKcal / Math.max(1, profile.targetKcal)) * 100)}%`,
-                    background: 'var(--accent)'
-                  }}
-                />
-              </div>
-              <div className="grid-2" style={{ gap: 8 }}>
-                <div className="sensor-tile">
-                  <div style={{ fontSize: 10 }} className="muted">Protein</div>
-                  <div style={{ fontSize: 14, fontWeight: 800 }}>
-                    {Math.round(consumedP)} / {profile.targetProteinG}g
-                  </div>
-                </div>
-                <div className="sensor-tile">
-                  <div style={{ fontSize: 10 }} className="muted">Carbs / Fat</div>
-                  <div style={{ fontSize: 14, fontWeight: 800 }}>
-                    {Math.round(consumedC)}g / {Math.round(consumedF)}g
-                  </div>
-                </div>
-              </div>
-            </div>
+            <DailyGoalHeroCard
+              consumedKcal={consumedKcal}
+              targetKcal={profile.targetKcal}
+              onBoltClick={() => setTab('workout')}
+            />
+
+            <QuickActionsRow
+              onWorkout={() => setTab('workout')}
+              onMeal={() => setTab('nutrition')}
+              onWater={() => addWater(250)}
+              onSync={() => setVersionModalOpen(true)}
+            />
+
+            <DailySummaryCard
+              steps={telemetry.stepCount}
+              activeBurnKcal={telemetry.activeCaloriesBurned}
+              consumedKcal={consumedKcal}
+              targetKcal={profile.targetKcal}
+              proteinG={consumedP}
+              targetProteinG={profile.targetProteinG}
+              waterMl={profile.waterConsumedMl}
+            />
+
+            <ScheduledDietTachometerCard
+              currentKcal={consumedKcal}
+              targetKcal={profile.targetKcal}
+              proteinG={consumedP}
+              targetProteinG={profile.targetProteinG}
+              fatG={consumedF}
+              targetFatG={profile.targetFatG}
+              carbsG={consumedC}
+              targetCarbsG={profile.targetCarbsG}
+              onCalendarClick={() => setTab('progress')}
+            />
+
+            <ArchVaultTrioCard
+              caloriesKcal={telemetry.activeCaloriesBurned}
+              timeMinutes={workouts.reduce((sum, w) => sum + (w.date === today ? w.durationMinutes : 0), 0) || null}
+              distanceMiles={
+                telemetry.distanceMeters != null && telemetry.distanceMeters > 0
+                  ? (telemetry.distanceMeters / 1609.34).toFixed(2)
+                  : '-'
+              }
+            />
 
             {/* Hydration Card */}
             <div className="card">
