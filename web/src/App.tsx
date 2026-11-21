@@ -5,7 +5,6 @@ import {
   Copy,
   Droplets,
   Dumbbell,
-  Flame,
   Home,
   LogOut,
   Palette,
@@ -16,6 +15,7 @@ import {
 } from 'lucide-react';
 import {
   ActivityLevel,
+  DailyRecording,
   FoodItem,
   GoalType,
   LifestyleSleepAnalysis,
@@ -43,6 +43,11 @@ import {
 import { VersionSyncModal } from './components/VersionSyncModal';
 import { AuthScreen } from './components/AuthScreen';
 import { PersonalWizard } from './components/PersonalWizard';
+import {
+  EQUIPMENT_TYPES,
+  MUSCLE_GROUPS,
+  ProgressAnalyticsTab
+} from './components/ProgressAnalyticsTab';
 import { LegalPage } from './components/LegalPages';
 import {
   AuthAccount,
