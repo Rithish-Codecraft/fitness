@@ -265,7 +265,7 @@ export const App: React.FC = () => {
   const [weightKg, setWeightKg] = useState('');
   const [reps, setReps] = useState('');
   const [durationMin, setDurationMin] = useState('45');
-  const [dailyRecordings] = useState<DailyRecording[]>(
+  const [dailyRecordings, setDailyRecordings] = useState<DailyRecording[]>(
     initialBundle?.dailyRecordings ?? []
   );
 
@@ -790,7 +790,7 @@ export const App: React.FC = () => {
               caloriesConsumed: consumedKcal,
               waterMl: profile.waterConsumedMl
             },
-            ...dailyRecordings.filter((r) => r.date !== today)
+            ...dailyRecordings.filter((r: DailyRecording) => r.date !== today)
           ]}
         />
       )}
