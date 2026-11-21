@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import {
   ActivityLevel,
-  DailyRecording,
   FoodItem,
   GoalType,
   LifestyleSleepAnalysis,
@@ -43,11 +42,6 @@ import {
 import { VersionSyncModal } from './components/VersionSyncModal';
 import { AuthScreen } from './components/AuthScreen';
 import { PersonalWizard } from './components/PersonalWizard';
-import {
-  EQUIPMENT_TYPES,
-  MUSCLE_GROUPS,
-  ProgressAnalyticsTab
-} from './components/ProgressAnalyticsTab';
 import { LegalPage } from './components/LegalPages';
 import {
   AuthAccount,
@@ -259,9 +253,14 @@ export const App: React.FC = () => {
   // Manual workout form state
   const [workoutTitle, setWorkoutTitle] = useState('');
   const [exerciseName, setExerciseName] = useState('');
+  const [muscleGroup, setMuscleGroup] = useState<string>(MUSCLE_GROUPS[0]);
+  const [equipmentType, setEquipmentType] = useState<string>(EQUIPMENT_TYPES[0]);
   const [weightKg, setWeightKg] = useState('');
   const [reps, setReps] = useState('');
   const [durationMin, setDurationMin] = useState('45');
+  const [dailyRecordings, setDailyRecordings] = useState<DailyRecording[]>(
+    initialBundle?.dailyRecordings ?? []
+  );
 
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
   if (pathname === '/privacy' || pathname === '/terms') {
@@ -336,17 +335,20 @@ export const App: React.FC = () => {
     if (!exerciseName.trim()) return;
     const w = Number(weightKg) || 0;
     const r = Number(reps) || 0;
+    const dur = Number(durationMin) || 45;
     const session: WorkoutSession = {
       id: crypto.randomUUID(),
       date: today,
       title: workoutTitle.trim() || `${exerciseName.trim()} Session`,
-      durationMinutes: Number(durationMin) || 45,
+      durationMinutes: dur,
+      kcalBurned: Math.round(dur * 6.5),
       notes: '',
       exercises: [
         {
           id: crypto.randomUUID(),
           exerciseName: exerciseName.trim(),
-          muscleGroup: 'Strength',
+          muscleGroup,
+          equipmentType,
           sets: [
             {
               id: crypto.randomUUID(),
