@@ -32,7 +32,7 @@ import {
 } from './engine/calculators';
 import { useWebTelemetry } from './hooks/useWebTelemetry';
 import { TelemetryCard } from './components/TelemetryCard';
-import { LifestyleSleepCard, StorageSyncCard } from './components/StorageAndLifestyleCards';
+import { LifestyleSleepCard } from './components/StorageAndLifestyleCards';
 import { VersionSyncModal } from './components/VersionSyncModal';
 import { AuthScreen } from './components/AuthScreen';
 import { PersonalWizard } from './components/PersonalWizard';
@@ -483,12 +483,6 @@ export const App: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <StorageSyncCard
-              lastSync={lastSync}
-              onExportAllJson={exportAllJson}
-              onImportJson={importAndroidJson}
-            />
-
             {/* Daily Macros Card */}
             <div className="card">
               <div
