@@ -1,0 +1,10 @@
+{
+  "versionCode": 19,
+  "versionName": "1.8.19",
+  "apkUrl": "https://raw.githubusercontent.com/Rithish-Codecraft/fitness/main/releases/app-release.apk",
+  "releaseNotes": "• Progress (Analytics) Crash & Real-Data Fix: Rebuilt Progress screen with zero hardcoded mock cards, crash-safe Canvas bounds, real BMI, real Muscle Group sets, and real Equipment Tonnage breakdown.",
+  "isMandatory": false,
+  "minSupportedVersion": 1,
+  "fileSizeBytes": 55683840,
+  "sha256": "7993BA0AF6DF3C512BD1F4A5AF2805F899729D7408B316DF8AFE9152F732CBAE"
+}

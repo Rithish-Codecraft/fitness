@@ -10,3 +10,5 @@ app/build/
 .cxx
 *.apk
 !releases/app-release.apk
+web/node_modules/
+web/dist/
