@@ -130,7 +130,7 @@ fun PulseForgeStorageCard(
                         )
                     }
                     Text(
-                        text = storageStatus.targetDirectoryPath.ifEmpty { "Documents/PulseForge AI/" },
+                        text = storageStatus.targetDirectoryPath.ifEmpty { "Documents/pulseforce/" },
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White,
@@ -143,7 +143,7 @@ fun PulseForgeStorageCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "${storageStatus.syncedFileCount} JSON files synced",
+                            text = "${storageStatus.syncedFileCount} files • ${storageStatus.recordedDaysCount}d history",
                             fontSize = 11.sp,
                             color = Color(0xFF00CEC9),
                             fontWeight = FontWeight.SemiBold,

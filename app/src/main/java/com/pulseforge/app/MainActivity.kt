@@ -261,6 +261,7 @@ class MainActivity : ComponentActivity() {
                             AuthScreen(
                                 onSignUp = { name, email, pass -> viewModel.signUp(name, email, pass) },
                                 onLogin = { id, pass -> viewModel.login(id, pass) },
+                                onGoogleSignIn = { googleEmail -> viewModel.signInWithGoogle(googleEmail) },
                                 onAuthSuccess = { isNewSignUp ->
                                     val nextRoute = if (isNewSignUp) {
                                         Screen.PersonalWizard.route

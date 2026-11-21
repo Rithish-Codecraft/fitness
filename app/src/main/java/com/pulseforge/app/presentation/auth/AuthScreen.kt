@@ -1,5 +1,9 @@
 package com.pulseforge.app.presentation.auth
 
+import android.accounts.AccountManager
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -52,6 +56,9 @@ private enum class AuthModalMode {
 fun AuthScreen(
     onSignUp: (fullName: String, email: String, password: String) -> Result<AuthAccount>,
     onLogin: (identifier: String, password: String) -> Result<AuthAccount>,
+    onGoogleSignIn: (googleEmail: String) -> Result<Pair<AuthAccount, Boolean>> = {
+        Result.failure(IllegalStateException("Google sign-in unavailable"))
+    },
     onAuthSuccess: (isNewSignUp: Boolean) -> Unit
 ) {
     val slides = remember {
@@ -88,6 +95,40 @@ fun AuthScreen(
 
     val pagerState = rememberPagerState(pageCount = { slides.size })
     var modalMode by remember { mutableStateOf(AuthModalMode.NONE) }
+    var showGoogleEmailFallback by remember { mutableStateOf(false) }
+
+    val googlePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val email = result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+            if (!email.isNullOrBlank()) {
+                onGoogleSignIn(email).onSuccess { (_, isNewUser) ->
+                    modalMode = AuthModalMode.NONE
+                    onAuthSuccess(isNewUser)
+                }
+            } else {
+                showGoogleEmailFallback = true
+            }
+        }
+    }
+
+    val launchGoogleSignIn = {
+        try {
+            val intent = AccountManager.newChooseAccountIntent(
+                null,
+                null,
+                arrayOf("com.google"),
+                null,
+                null,
+                null,
+                null
+            )
+            googlePickerLauncher.launch(intent)
+        } catch (_: Exception) {
+            showGoogleEmailFallback = true
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Full-bleed swipeable hero pager matching reference UI
@@ -283,6 +324,52 @@ fun AuthScreen(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Continue with Google Pill Button
+            OutlinedButton(
+                onClick = launchGoogleSignIn,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(18.dp),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.4f)),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.White.copy(alpha = 0.14f),
+                    contentColor = Color.White
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Google",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Continue with Google",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
+        }
+
+        if (showGoogleEmailFallback) {
+            GoogleEmailFallbackDialog(
+                onDismiss = { showGoogleEmailFallback = false },
+                onSubmit = { email ->
+                    onGoogleSignIn(email).fold(
+                        onSuccess = { (_, isNewUser) ->
+                            showGoogleEmailFallback = false
+                            modalMode = AuthModalMode.NONE
+                            onAuthSuccess(isNewUser)
+                        },
+                        onFailure = {}
+                    )
+                }
+            )
         }
 
         // Login / Signup Modal Sheet
@@ -425,6 +512,66 @@ private fun AuthFormDialog(
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Text(if (mode == AuthModalMode.SIGNUP) "Create User ID & Continue" else "Login")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+private fun GoogleEmailFallbackDialog(
+    onDismiss: () -> Unit,
+    onSubmit: (String) -> Unit
+) {
+    var googleEmail by remember { mutableStateOf("") }
+    var errorText by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Text(
+                text = "Continue with Google",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = googleEmail,
+                    onValueChange = { googleEmail = it; errorText = null },
+                    label = { Text("Google Email (e.g. name@gmail.com)") },
+                    leadingIcon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (errorText != null) {
+                    Text(
+                        text = errorText!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val clean = googleEmail.trim()
+                    if (clean.contains("@") && clean.contains(".")) {
+                        onSubmit(clean)
+                    } else {
+                        errorText = "Enter a valid Google email address."
+                    }
+                },
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Continue")
             }
         },
         dismissButton = {

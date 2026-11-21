@@ -235,10 +235,32 @@ data class LifestyleSleepAnalysis(
 /**
  * Dedicated PulseForge AI Device Storage & Data Directory Status
  */
+data class DailyRecordingSnapshot(
+    val date: String,
+    val userId: String,
+    val steps: Long = 0L,
+    val distanceMeters: Double = 0.0,
+    val activeCaloriesKcal: Double = 0.0,
+    val elevationGainMeters: Double = 0.0,
+    val floorsClimbed: Int = 0,
+    val consumedCalories: Double = 0.0,
+    val proteinG: Double = 0.0,
+    val carbsG: Double = 0.0,
+    val fatG: Double = 0.0,
+    val waterMl: Int = 0,
+    val workoutCount: Int = 0,
+    val workoutVolumeKg: Double = 0.0,
+    val sleepHours: Double = 0.0,
+    val nightScreenMinutes: Long = 0L,
+    val dailyScreenMinutes: Long = 0L,
+    val capturedAt: String = ""
+)
+
 data class StorageStatus(
     val targetDirectoryPath: String = "",
     val isDirectoryReady: Boolean = false,
     val syncedFileCount: Int = 0,
+    val recordedDaysCount: Int = 0,
     val lastSyncTimestamp: String = "-",
     val hasStoragePermission: Boolean = true
 )

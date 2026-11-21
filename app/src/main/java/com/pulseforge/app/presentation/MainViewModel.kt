@@ -44,6 +44,7 @@ data class MainUiState(
     val healthConnectStatus: com.pulseforge.app.core.telemetry.HealthConnectStatus = com.pulseforge.app.core.telemetry.HealthConnectStatus(),
     val lifestyleSleepAnalysis: LifestyleSleepAnalysis = LifestyleSleepAnalysis(),
     val storageStatus: StorageStatus = StorageStatus(),
+    val multiDayRecordings: List<DailyRecordingSnapshot> = emptyList(),
     val isCameraPermissionGranted: Boolean = false,
     val policyState: com.pulseforge.app.core.policy.AndroidPolicyState = com.pulseforge.app.core.policy.AndroidPolicyState(),
     val authState: com.pulseforge.app.core.auth.AuthSessionState = com.pulseforge.app.core.auth.AuthSessionState()
@@ -158,7 +159,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 sensorTelemetry = state.sensorTelemetry,
                 lifestyleSleepAnalysis = state.lifestyleSleepAnalysis
             )
-            _uiState.update { it.copy(storageStatus = status) }
+            val history = storageManager.loadMultiDayRecordings()
+            _uiState.update { it.copy(storageStatus = status, multiDayRecordings = history) }
         }
     }
 
@@ -255,6 +257,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun logout() {
         authManager.logout()
         refreshAuthState()
+    }
+
+    fun signInWithGoogle(googleEmail: String): Result<Pair<com.pulseforge.app.core.auth.AuthAccount, Boolean>> {
+        val result = authManager.signInWithGoogle(googleEmail)
+        result.onSuccess { (account, isNewUser) ->
+            viewModelScope.launch {
+                val updatedProfile = _uiState.value.userProfile.copy(
+                    id = account.userId,
+                    name = account.fullName,
+                    isOnboarded = !isNewUser
+                )
+                repository.saveUserProfile(updatedProfile)
+            }
+            refreshAuthState()
+        }
+        return result
     }
 
     override fun onCleared() {

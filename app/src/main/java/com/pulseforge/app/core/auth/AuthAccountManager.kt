@@ -118,6 +118,56 @@ class AuthAccountManager(context: Context) {
         prefs.edit().putBoolean(KEY_NEEDS_WIZARD, false).apply()
     }
 
+    fun signInWithGoogle(googleEmail: String): Result<Pair<AuthAccount, Boolean>> {
+        val cleanEmail = googleEmail.trim().lowercase()
+        if (cleanEmail.isBlank() || !cleanEmail.contains("@")) {
+            return Result.failure(IllegalArgumentException("Select a valid Google account."))
+        }
+
+        val accounts = getAccounts().toMutableList()
+        val existing = accounts.firstOrNull { it.email.equals(cleanEmail, ignoreCase = true) }
+        if (existing != null) {
+            prefs.edit()
+                .putString(KEY_ACTIVE_USER_ID, existing.userId)
+                .putBoolean(KEY_NEEDS_WIZARD, false)
+                .apply()
+            return Result.success(existing to false)
+        }
+
+        val existingIds = accounts.map { it.userId }.toSet()
+        var newId: String
+        do {
+            newId = "PF-${Random.nextInt(100000, 999999)}"
+        } while (newId in existingIds)
+
+        val derivedName = cleanEmail.substringBefore("@")
+            .replace(".", " ")
+            .replace("_", " ")
+            .split(" ")
+            .filter { it.isNotBlank() }
+            .joinToString(" ") { part ->
+                part.replaceFirstChar { ch -> ch.uppercase() }
+            }
+            .ifBlank { "Google Member" }
+
+        val account = AuthAccount(
+            userId = newId,
+            fullName = derivedName,
+            email = cleanEmail,
+            passwordHash = sha256("google_oauth_${newId}"),
+            createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        )
+        accounts.add(account)
+        saveAccounts(accounts)
+
+        prefs.edit()
+            .putString(KEY_ACTIVE_USER_ID, account.userId)
+            .putBoolean(KEY_NEEDS_WIZARD, true)
+            .apply()
+
+        return Result.success(account to true)
+    }
+
     fun logout() {
         prefs.edit()
             .remove(KEY_ACTIVE_USER_ID)
