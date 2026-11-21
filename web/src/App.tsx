@@ -253,14 +253,11 @@ export const App: React.FC = () => {
   // Manual workout form state
   const [workoutTitle, setWorkoutTitle] = useState('');
   const [exerciseName, setExerciseName] = useState('');
-  const [muscleGroup, setMuscleGroup] = useState<string>(MUSCLE_GROUPS[0]);
-  const [equipmentType, setEquipmentType] = useState<string>(EQUIPMENT_TYPES[0]);
+  const muscleGroup = 'CHEST';
+  const equipmentType = 'BARBELL';
   const [weightKg, setWeightKg] = useState('');
   const [reps, setReps] = useState('');
   const [durationMin, setDurationMin] = useState('45');
-  const [dailyRecordings, setDailyRecordings] = useState<DailyRecording[]>(
-    initialBundle?.dailyRecordings ?? []
-  );
 
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
   if (pathname === '/privacy' || pathname === '/terms') {
@@ -690,6 +687,26 @@ export const App: React.FC = () => {
               onChange={(e) => setExerciseName(e.target.value)}
             />
             <div className="grid-2">
+              <select
+                className="input"
+                value={muscleGroup}
+                onChange={(e) => setMuscleGroup(e.target.value)}
+              >
+                {MUSCLE_GROUPS.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              <select
+                className="input"
+                value={equipmentType}
+                onChange={(e) => setEquipmentType(e.target.value)}
+              >
+                {EQUIPMENT_TYPES.map((eq) => (
+                  <option key={eq} value={eq}>{eq}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid-2">
               <input
                 className="input"
                 type="number"
@@ -752,47 +769,20 @@ export const App: React.FC = () => {
 
       {/* TAB 4: PROGRESS */}
       {tab === 'progress' && (
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <strong style={{ fontSize: 16 }}>Real Progress &amp; Adherence Analytics</strong>
-          <div className="grid-2">
-            <div className="sensor-tile">
-              <div style={{ fontSize: 11 }} className="muted">Calorie Target Adherence</div>
-              <div style={{ fontSize: 22, fontWeight: 900, marginTop: 4 }}>
-                {consumedKcal > 0
-                  ? `${Math.round((consumedKcal / Math.max(1, profile.targetKcal)) * 100)}%`
-                  : '-'}
-              </div>
-            </div>
-            <div className="sensor-tile">
-              <div style={{ fontSize: 11 }} className="muted">Workouts Completed</div>
-              <div style={{ fontSize: 22, fontWeight: 900, marginTop: 4 }}>
-                {workouts.length > 0 ? workouts.length : '-'}
-              </div>
-            </div>
-            <div className="sensor-tile">
-              <div style={{ fontSize: 11 }} className="muted">Total Volume Lifted</div>
-              <div style={{ fontSize: 22, fontWeight: 900, marginTop: 4 }}>
-                {workouts.length > 0
-                  ? `${workouts.reduce(
-                      (a, w) =>
-                        a +
-                        w.exercises.reduce(
-                          (ea, ex) => ea + ex.sets.reduce((sa, s) => sa + s.weightKg * s.reps, 0),
-                          0
-                        ),
-                      0
-                    )} kg`
-                  : '-'}
-              </div>
-            </div>
-            <div className="sensor-tile">
-              <div style={{ fontSize: 11 }} className="muted">Goal Feasibility</div>
-              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 6 }}>
-                {targetsCalc.feasibilityNote}
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProgressAnalyticsTab
+          profile={profile}
+          workouts={workouts}
+          telemetry={telemetry}
+          dailyRecordings={[
+            {
+              date: today,
+              steps: telemetry.stepCount ?? 0,
+              caloriesConsumed: consumedKcal,
+              waterMl: profile.waterConsumedMl
+            },
+            ...dailyRecordings.filter((r) => r.date !== today)
+          ]}
+        />
       )}
 
       {/* TAB 5: SETTINGS, ACCOUNT & THEMES */}
