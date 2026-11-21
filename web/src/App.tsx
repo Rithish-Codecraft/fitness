@@ -32,7 +32,7 @@ import {
 } from './engine/calculators';
 import { useWebTelemetry } from './hooks/useWebTelemetry';
 import { TelemetryCard } from './components/TelemetryCard';
-import { LifestyleSleepCard } from './components/StorageAndLifestyleCards';
+import { LifestyleSleepCard, StorageSyncCard } from './components/StorageAndLifestyleCards';
 import { VersionSyncModal } from './components/VersionSyncModal';
 import { AuthScreen } from './components/AuthScreen';
 import { PersonalWizard } from './components/PersonalWizard';
@@ -887,6 +887,12 @@ export const App: React.FC = () => {
             {syncCopiedMsg && (
               <div style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>{syncCopiedMsg}</div>
             )}
+
+            <StorageSyncCard
+              lastSync={lastSync}
+              onExportAllJson={exportAllJson}
+              onImportJson={importAndroidJson}
+            />
 
             <div className="grid-2">
               {(['POWER', 'LAVENDER', 'LONGEVITY', 'WELLNESS'] as ThemePalette[]).map((t) => (
