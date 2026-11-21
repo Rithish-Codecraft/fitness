@@ -887,7 +887,7 @@ export const App: React.FC = () => {
             </div>
 
             <button className="btn" onClick={copySyncKey}>
-              <Copy size={14} color="#38bdf8" /> Copy Multi-Device Sync Key (`PFKEY`)
+              <Copy size={14} color="#38bdf8" /> Copy Multi-Device Sync Key (PFKEY)
             </button>
             {syncCopiedMsg && (
               <div style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>{syncCopiedMsg}</div>
@@ -931,6 +931,7 @@ export const App: React.FC = () => {
       {/* Bottom Floating Capsule Navigation */}
       <nav className="bottom-nav">
         <button
+          aria-label="Home"
           className={`nav-item ${tab === 'dashboard' ? 'active' : ''}`}
           onClick={() => setTab('dashboard')}
         >
@@ -938,6 +939,7 @@ export const App: React.FC = () => {
           {tab === 'dashboard' && <span>Home</span>}
         </button>
         <button
+          aria-label="Nutrition"
           className={`nav-item ${tab === 'nutrition' ? 'active' : ''}`}
           onClick={() => setTab('nutrition')}
         >
@@ -945,6 +947,7 @@ export const App: React.FC = () => {
           {tab === 'nutrition' && <span>Nutrition</span>}
         </button>
         <button
+          aria-label="Workout"
           className={`nav-item ${tab === 'workout' ? 'active' : ''}`}
           onClick={() => setTab('workout')}
         >
@@ -952,6 +955,7 @@ export const App: React.FC = () => {
           {tab === 'workout' && <span>Workout</span>}
         </button>
         <button
+          aria-label="Progress"
           className={`nav-item ${tab === 'progress' ? 'active' : ''}`}
           onClick={() => setTab('progress')}
         >
@@ -959,6 +963,7 @@ export const App: React.FC = () => {
           {tab === 'progress' && <span>Progress</span>}
         </button>
         <button
+          aria-label="Settings"
           className={`nav-item ${tab === 'settings' ? 'active' : ''}`}
           onClick={() => setTab('settings')}
         >

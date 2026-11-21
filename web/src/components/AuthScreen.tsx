@@ -33,7 +33,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [acceptedPolicy, setAcceptedPolicy] = useState(true);
+  const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [syncKey, setSyncKey] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -257,7 +257,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           <button
             type="button"
             className={`btn ${mode === 'LOGIN' ? 'btn-primary' : ''}`}
-            style={{ border: 'none', padding: '8px 6px', fontSize: 11 }}
+            style={{ border: 'none', padding: '10px 8px', fontSize: 12, minHeight: 40 }}
             onClick={() => {
               setMode('LOGIN');
               setError(null);
@@ -268,7 +268,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           <button
             type="button"
             className={`btn ${mode === 'SIGNUP' ? 'btn-primary' : ''}`}
-            style={{ border: 'none', padding: '8px 6px', fontSize: 11 }}
+            style={{ border: 'none', padding: '10px 8px', fontSize: 12, minHeight: 40 }}
             onClick={() => {
               setMode('SIGNUP');
               setError(null);
@@ -279,7 +279,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           <button
             type="button"
             className={`btn ${mode === 'SYNC' ? 'btn-primary' : ''}`}
-            style={{ border: 'none', padding: '8px 6px', fontSize: 11 }}
+            style={{ border: 'none', padding: '10px 8px', fontSize: 12, minHeight: 40 }}
             onClick={() => {
               setMode('SYNC');
               setError(null);
@@ -351,11 +351,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                   />
                   <button
                     type="button"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                     onClick={() => setShowPassword((v) => !v)}
                     style={{
                       position: 'absolute',
-                      right: 10,
-                      top: 9,
+                      right: 6,
+                      top: 4,
+                      width: 36,
+                      height: 36,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       background: 'none',
                       border: 'none',
                       color: 'var(--text-muted)',
@@ -374,8 +380,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             </>
           ) : (
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, display: 'block', marginBottom: 4 }} className="muted">
-                Multi-Device Sync Key (`PFKEY:...`) or Android Account JSON
+              <label style={{ fontSize: 14, fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                Multi-Device Sync Key (PFKEY:...) or Android Account JSON
               </label>
               <textarea
                 className="input"

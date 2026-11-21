@@ -67,7 +67,7 @@ export const VersionSyncModal: React.FC<VersionSyncModalProps> = ({
             <CheckCircle2 size={18} color="#10b981" />
             <strong style={{ fontSize: 16 }}>Unified APK &amp; Web Version Control</strong>
           </div>
-          <button className="btn" onClick={onClose} style={{ padding: 6 }}>
+          <button className="btn" aria-label="Close" onClick={onClose} style={{ padding: 8, minWidth: 36, minHeight: 36 }}>
             <X size={16} />
           </button>
         </div>
