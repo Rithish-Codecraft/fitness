@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Gauge, Pause, Play } from 'lucide-react';
 import { findRegistryEntry, resolveExerciseMediaUrl } from '../data/exerciseMediaRegistry';
+import { AnimationPattern, resolveAnimationForWorkout } from '../engine/exerciseCatalog';
 
 interface BiomechanicalPlayerProps {
   exerciseName: string;
@@ -15,6 +16,7 @@ export const BiomechanicalPlayer: React.FC<BiomechanicalPlayerProps> = ({
 }) => {
   const entry = findRegistryEntry(exerciseName);
   const activeMuscle = entry?.primaryMuscle || muscleGroup || 'Chest / Pectorals';
+  const pattern = resolveAnimationForWorkout(exerciseName, activeMuscle).animationType;
 
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,7 +71,7 @@ export const BiomechanicalPlayer: React.FC<BiomechanicalPlayerProps> = ({
   }, [isPlaying, speed, mediaUrl]);
 
   const isVideo = Boolean(mediaUrl && /\.(mp4|webm)(\?|$)/i.test(mediaUrl));
-  const showMedia = Boolean(mediaUrl && !imgFailed);
+  const showExternalMedia = Boolean(mediaUrl && !imgFailed);
 
   return (
     <div
@@ -77,7 +79,7 @@ export const BiomechanicalPlayer: React.FC<BiomechanicalPlayerProps> = ({
         position: 'relative',
         width: '100%',
         aspectRatio: compact ? '16 / 6' : '16 / 10',
-        minHeight: compact ? 84 : 184,
+        minHeight: compact ? 88 : 190,
         borderRadius: 16,
         overflow: 'hidden',
         background: 'radial-gradient(circle at 50% 35%, #1d2233 0%, #0e1017 100%)',
@@ -89,7 +91,7 @@ export const BiomechanicalPlayer: React.FC<BiomechanicalPlayerProps> = ({
     >
       {loading && <div className="pf-skeleton-shimmer" style={{ position: 'absolute', inset: 0 }} />}
 
-      {!loading && showMedia && (
+      {!loading && showExternalMedia && (
         <div
           key={fadeKey}
           className="pf-crossfade"
@@ -135,8 +137,13 @@ export const BiomechanicalPlayer: React.FC<BiomechanicalPlayerProps> = ({
         </div>
       )}
 
-      {!loading && !showMedia && (
-        <AnatomicalMuscleFallback muscleGroup={activeMuscle} compact={compact} />
+      {!loading && !showExternalMedia && (
+        <AnatomicalMotionCanvas
+          pattern={pattern}
+          muscleGroup={activeMuscle}
+          isPlaying={isPlaying}
+          speed={speed}
+        />
       )}
 
       {/* Compact HUD Overlay */}
@@ -172,7 +179,7 @@ export const BiomechanicalPlayer: React.FC<BiomechanicalPlayerProps> = ({
           {activeMuscle}
         </span>
 
-        {!compact && isVideo && showMedia && (
+        {!compact && (
           <div style={{ display: 'flex', gap: 6, pointerEvents: 'auto' }}>
             <button
               type="button"
@@ -221,95 +228,263 @@ export const BiomechanicalPlayer: React.FC<BiomechanicalPlayerProps> = ({
   );
 };
 
-const AnatomicalMuscleFallback: React.FC<{ muscleGroup: string; compact: boolean }> = ({
-  muscleGroup,
-  compact
-}) => {
-  const m = muscleGroup.toLowerCase();
-  const isChest = m.includes('chest') || m.includes('pectoral');
-  const isBack = m.includes('back') || m.includes('lat');
-  const isShoulders = m.includes('shoulder') || m.includes('delt');
-  const isBiceps = m.includes('bicep');
-  const isTriceps = m.includes('tricep');
-  const isCore = m.includes('core') || m.includes('abs');
-  const isQuads = m.includes('quad');
-  const isHamstrings = m.includes('hamstring');
-  const isGlutes = m.includes('glute');
-  const isCalves = m.includes('calf') || m.includes('calves');
+/**
+ * 60fps Hardware-Accelerated Anatomical Exercise Motion Renderer.
+ * Renders monochrome anatomical musculature + equipment silhouette with glowing
+ * coral-red primary working muscle contraction synchronized to each movement pattern.
+ */
+const AnatomicalMotionCanvas: React.FC<{
+  pattern: AnimationPattern;
+  muscleGroup: string;
+  isPlaying: boolean;
+  speed: number;
+}> = ({ pattern, muscleGroup, isPlaying, speed }) => {
+  const [phase, setPhase] = useState(0);
 
-  const activeFill = '#e85b37';
-  const baseFill = 'rgba(248, 250, 252, 0.14)';
+  useEffect(() => {
+    if (!isPlaying) return;
+    let rafId = 0;
+    let last = performance.now();
+    let acc = 0;
+
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      acc += dt * speed * 1.9;
+      setPhase(0.5 - 0.5 * Math.cos(acc * Math.PI));
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [isPlaying, speed]);
+
+  const m = muscleGroup.toLowerCase();
+  const bodyBase = '#cbd5e1';
+  const bodyShade = '#64748b';
+  const equipStroke = '#475569';
+  const equipFill = '#334155';
+  const activeMuscle = '#ef4444';
+  const activeGlow = `rgba(239, 68, 68, ${0.35 + phase * 0.55})`;
+
+  // Compute dynamic limb & equipment coordinates per pattern (phase 0 = eccentric, 1 = peak contraction)
+  const renderExerciseScene = () => {
+    switch (pattern) {
+      case 'BENCH_PRESS': {
+        const barY = 76 - phase * 30;
+        const elbowY = 82 - phase * 18;
+        return (
+          <g>
+            {/* Incline Bench */}
+            <rect x="65" y="96" width="130" height="8" rx="3" fill={equipFill} />
+            <line x1="85" y1="104" x2="80" y2="128" stroke={equipStroke} strokeWidth="5" strokeLinecap="round" />
+            <line x1="175" y1="104" x2="180" y2="128" stroke={equipStroke} strokeWidth="5" strokeLinecap="round" />
+            {/* Athlete supine */}
+            <circle cx="82" cy="84" r="9" fill={bodyBase} />
+            <rect x="92" y="80" width="58" height="16" rx="8" fill={bodyBase} />
+            {/* Highlighted Chest */}
+            <ellipse cx="112" cy="84" rx="14" ry="7" fill={activeMuscle} />
+            <ellipse cx="112" cy="84" rx="18" ry="10" fill={activeGlow} />
+            {/* Legs */}
+            <path d="M148 88 L178 96 L184 124" stroke={bodyShade} strokeWidth="11" strokeLinecap="round" fill="none" />
+            {/* Arms pressing barbell */}
+            <path d={`M108 82 L114 ${elbowY} L112 ${barY}`} stroke={bodyBase} strokeWidth="9" strokeLinecap="round" fill="none" />
+            {/* Barbell */}
+            <line x1="84" y1={barY} x2="140" y2={barY} stroke="#e2e8f0" strokeWidth="3.5" strokeLinecap="round" />
+            <rect x="80" y={barY - 10} width="7" height="20" rx="2" fill="#e85b37" />
+            <rect x="137" y={barY - 10} width="7" height="20" rx="2" fill="#e85b37" />
+          </g>
+        );
+      }
+
+      case 'TRICEP_PUSHDOWN':
+      case 'CABLE_FLY': {
+        const handX = pattern === 'CABLE_FLY' ? 132 + phase * 22 : 128 + phase * 18;
+        const handY = pattern === 'CABLE_FLY' ? 68 + phase * 10 : 54 + phase * 32;
+        return (
+          <g>
+            {/* Cable Pulley Tower (matching video layout!) */}
+            <rect x="44" y="16" width="8" height="114" rx="2" fill={equipFill} />
+            <rect x="34" y="126" width="36" height="5" rx="2" fill={equipStroke} />
+            <rect x="40" y={54 - phase * 16} width="16" height="26" rx="2" fill="#1e293b" stroke={equipStroke} strokeWidth="1.5" />
+            {/* Cable line */}
+            <line x1="52" y1="26" x2={handX} y2={handY} stroke="#94a3b8" strokeWidth="1.8" />
+            {/* Incline Bench / Seated Athlete */}
+            <line x1="112" y1="100" x2="132" y2="56" stroke={equipStroke} strokeWidth="7" strokeLinecap="round" />
+            <line x1="120" y1="100" x2="112" y2="128" stroke={equipStroke} strokeWidth="4.5" strokeLinecap="round" />
+            <line x1="146" y1="100" x2="152" y2="128" stroke={equipStroke} strokeWidth="4.5" strokeLinecap="round" />
+            {/* Athlete Torso & Head */}
+            <circle cx="136" cy="44" r="8.5" fill={bodyBase} />
+            <path d="M132 54 L118 94" stroke={bodyBase} strokeWidth="16" strokeLinecap="round" />
+            {/* Highlighted Working Muscle (Triceps / Chest) */}
+            <ellipse
+              cx={pattern === 'CABLE_FLY' ? 132 : 136}
+              cy={pattern === 'CABLE_FLY' ? 62 : 66}
+              rx="8"
+              ry="5"
+              fill={activeMuscle}
+            />
+            <ellipse
+              cx={pattern === 'CABLE_FLY' ? 132 : 136}
+              cy={pattern === 'CABLE_FLY' ? 62 : 66}
+              rx="12"
+              ry="8"
+              fill={activeGlow}
+            />
+            {/* Legs */}
+            <path d="M118 94 L152 96 L160 126" stroke={bodyShade} strokeWidth="10" strokeLinecap="round" fill="none" />
+            {/* Articulated Arm pulling cable */}
+            <path d={`M132 58 L142 74 L${handX} ${handY}`} stroke={bodyBase} strokeWidth="8" strokeLinecap="round" fill="none" />
+          </g>
+        );
+      }
+
+      case 'LAT_PULLDOWN':
+      case 'OVERHEAD_PRESS': {
+        const isPulldown = pattern === 'LAT_PULLDOWN';
+        const barY = isPulldown ? 28 + phase * 34 : 58 - phase * 32;
+        return (
+          <g>
+            {/* Frame / Tower */}
+            {isPulldown && (
+              <>
+                <line x1="130" y1="14" x2="130" y2={barY} stroke="#94a3b8" strokeWidth="2" />
+                <rect x="108" y="96" width="44" height="8" rx="3" fill={equipFill} />
+              </>
+            )}
+            {/* Torso */}
+            <circle cx="130" cy="48" r="9" fill={bodyBase} />
+            <rect x="118" y="58" width="24" height="40" rx="8" fill={bodyBase} />
+            {/* Highlighted Lats / Shoulders */}
+            <ellipse cx="118" cy="65" rx="7" ry="11" fill={activeMuscle} />
+            <ellipse cx="142" cy="65" rx="7" ry="11" fill={activeMuscle} />
+            <ellipse cx="130" cy="66" rx="18" ry="12" fill={activeGlow} />
+            {/* Arms */}
+            <path d={`M118 62 L106 ${barY + 12} L106 ${barY}`} stroke={bodyBase} strokeWidth="8" strokeLinecap="round" fill="none" />
+            <path d={`M142 62 L154 ${barY + 12} L154 ${barY}`} stroke={bodyBase} strokeWidth="8" strokeLinecap="round" fill="none" />
+            {/* Barbell / Bar */}
+            <line x1="92" y1={barY} x2="168" y2={barY} stroke="#e2e8f0" strokeWidth="3.5" strokeLinecap="round" />
+            {!isPulldown && (
+              <>
+                <rect x="88" y={barY - 9} width="6" height="18" rx="2" fill="#e85b37" />
+                <rect x="166" y={barY - 9} width="6" height="18" rx="2" fill="#e85b37" />
+                <path d="M122 98 L120 130 M138 98 L140 130" stroke={bodyShade} strokeWidth="10" strokeLinecap="round" />
+              </>
+            )}
+          </g>
+        );
+      }
+
+      case 'SQUAT':
+      case 'LEG_PRESS':
+      case 'ROMANIAN_DEADLIFT':
+      case 'HIP_THRUST':
+      case 'CALF_RAISE': {
+        const drop = phase * 26;
+        const hipY = 76 + (pattern === 'HIP_THRUST' ? -phase * 22 : drop);
+        const kneeX = 148 + (pattern === 'SQUAT' ? phase * 10 : 0);
+        return (
+          <g>
+            {/* Floor */}
+            <line x1="56" y1="130" x2="204" y2="130" stroke={equipStroke} strokeWidth="3" strokeLinecap="round" />
+            {/* Legs */}
+            <path d={`M122 ${hipY} L${kneeX} 102 L126 128`} stroke={bodyBase} strokeWidth="12" strokeLinecap="round" fill="none" />
+            {/* Highlighted Lower Body (Quads / Glutes / Hamstrings / Calves) */}
+            <ellipse
+              cx={pattern === 'CALF_RAISE' ? 136 : pattern === 'HIP_THRUST' ? 124 : 136}
+              cy={pattern === 'CALF_RAISE' ? 116 : pattern === 'HIP_THRUST' ? hipY : (hipY + 102) / 2}
+              rx="10"
+              ry="14"
+              fill={activeMuscle}
+            />
+            <ellipse
+              cx={pattern === 'CALF_RAISE' ? 136 : 134}
+              cy={pattern === 'CALF_RAISE' ? 116 : (hipY + 102) / 2}
+              rx="15"
+              ry="18"
+              fill={activeGlow}
+            />
+            {/* Torso & Head */}
+            <path
+              d={`M122 ${hipY} L${pattern === 'ROMANIAN_DEADLIFT' ? 148 : 114} ${hipY - 34}`}
+              stroke={bodyBase}
+              strokeWidth="15"
+              strokeLinecap="round"
+            />
+            <circle cx={pattern === 'ROMANIAN_DEADLIFT' ? 154 : 114} cy={hipY - 46} r="8.5" fill={bodyBase} />
+            {/* Barbell */}
+            <line
+              x1="96"
+              y1={pattern === 'ROMANIAN_DEADLIFT' ? 104 - phase * 22 : hipY - 34}
+              x2="148"
+              y2={pattern === 'ROMANIAN_DEADLIFT' ? 104 - phase * 22 : hipY - 34}
+              stroke="#e2e8f0"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+            />
+          </g>
+        );
+      }
+
+      case 'BICEP_CURL':
+      case 'LATERAL_RAISE':
+      case 'BARBELL_ROW':
+      default: {
+        const angle = pattern === 'LATERAL_RAISE' ? phase * 1.3 : phase * 1.9;
+        const handX =
+          pattern === 'LATERAL_RAISE'
+            ? 144 + Math.sin(angle) * 28
+            : pattern === 'BICEP_CURL'
+              ? 142 + Math.cos(angle) * 18
+              : 146 - phase * 14;
+        const handY =
+          pattern === 'LATERAL_RAISE'
+            ? 84 - Math.sin(angle) * 28
+            : pattern === 'BICEP_CURL'
+              ? 88 - Math.sin(angle) * 26
+              : 94 - phase * 22;
+
+        return (
+          <g>
+            {/* Torso & Head */}
+            <circle cx="128" cy="36" r="9" fill={bodyBase} />
+            <rect x="116" y="47" width="24" height="44" rx="8" fill={bodyBase} />
+            {/* Highlighted Upper Muscle */}
+            <ellipse
+              cx={pattern === 'BARBELL_ROW' ? 128 : 142}
+              cy={pattern === 'LATERAL_RAISE' ? 52 : 66}
+              rx="9"
+              ry="7"
+              fill={activeMuscle}
+            />
+            <ellipse
+              cx={pattern === 'BARBELL_ROW' ? 128 : 142}
+              cy={pattern === 'LATERAL_RAISE' ? 52 : 66}
+              rx="14"
+              ry="11"
+              fill={activeGlow}
+            />
+            {/* Legs */}
+            <path d="M122 90 L120 128 M134 90 L136 128" stroke={bodyShade} strokeWidth="10" strokeLinecap="round" />
+            {/* Arm & Dumbbell */}
+            <path d={`M138 52 L144 72 L${handX} ${handY}`} stroke={bodyBase} strokeWidth="8" strokeLinecap="round" fill="none" />
+            <circle cx={handX} cy={handY} r="6.5" fill="#e85b37" />
+            {m.includes('back') && (
+              <circle cx="114" cy="76" r="5" fill={activeGlow} />
+            )}
+          </g>
+        );
+      }
+    }
+  };
 
   return (
     <svg
-      viewBox="0 0 180 140"
-      style={{
-        width: compact ? 84 : 136,
-        height: compact ? 68 : 116,
-        opacity: 0.95
-      }}
-      aria-label={`Anatomical diagram highlighting ${muscleGroup}`}
+      viewBox="0 0 260 145"
+      style={{ width: '100%', height: '100%', maxHeight: 220 }}
+      aria-label={`Animated exercise demonstration for ${muscleGroup}`}
     >
-      {/* Head & Neck */}
-      <circle cx="90" cy="18" r="9" fill={baseFill} />
-      <rect x="86" y="27" width="8" height="6" rx="2" fill={baseFill} />
-
-      {/* Shoulders / Deltoids */}
-      <ellipse cx="64" cy="40" rx="10" ry="7" fill={isShoulders ? activeFill : baseFill} />
-      <ellipse cx="116" cy="40" rx="10" ry="7" fill={isShoulders ? activeFill : baseFill} />
-
-      {/* Chest / Pectorals or Upper Back */}
-      <path
-        d="M72 34 L108 34 L105 52 L75 52 Z"
-        fill={isChest || isBack ? activeFill : baseFill}
-      />
-
-      {/* Arms (Biceps / Triceps) */}
-      <rect
-        x="53"
-        y="46"
-        width="9"
-        height="26"
-        rx="4"
-        fill={isBiceps || isTriceps ? activeFill : baseFill}
-      />
-      <rect
-        x="118"
-        y="46"
-        width="9"
-        height="26"
-        rx="4"
-        fill={isBiceps || isTriceps ? activeFill : baseFill}
-      />
-
-      {/* Core / Abs */}
-      <rect x="76" y="54" width="28" height="24" rx="5" fill={isCore ? activeFill : baseFill} />
-
-      {/* Glutes */}
-      <ellipse cx="82" cy="83" rx="9" ry="6" fill={isGlutes ? activeFill : baseFill} />
-      <ellipse cx="98" cy="83" rx="9" ry="6" fill={isGlutes ? activeFill : baseFill} />
-
-      {/* Quads / Hamstrings */}
-      <rect
-        x="73"
-        y="88"
-        width="13"
-        height="26"
-        rx="5"
-        fill={isQuads || isHamstrings ? activeFill : baseFill}
-      />
-      <rect
-        x="94"
-        y="88"
-        width="13"
-        height="26"
-        rx="5"
-        fill={isQuads || isHamstrings ? activeFill : baseFill}
-      />
-
-      {/* Calves */}
-      <rect x="75" y="116" width="10" height="18" rx="4" fill={isCalves ? activeFill : baseFill} />
-      <rect x="95" y="116" width="10" height="18" rx="4" fill={isCalves ? activeFill : baseFill} />
+      {renderExerciseScene()}
     </svg>
   );
 };
