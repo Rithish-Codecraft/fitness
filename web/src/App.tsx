@@ -44,6 +44,7 @@ import { VersionSyncModal } from './components/VersionSyncModal';
 import { AuthScreen } from './components/AuthScreen';
 import { PersonalWizard } from './components/PersonalWizard';
 import { WorkoutExplorer } from './components/WorkoutExplorer';
+import { LiftWorkoutInsights } from './components/LiftWorkoutInsights';
 import {
   EQUIPMENT_TYPES,
   MUSCLE_GROUPS,
@@ -720,6 +721,15 @@ export const App: React.FC = () => {
       {/* TAB 3: WORKOUT */}
       {tab === 'workout' && (
         <div>
+          <LiftWorkoutInsights
+            sessions={workouts}
+            profile={profile}
+            dailyRecordings={dailyRecordings}
+            onStartWorkout={() => {
+              const el = document.getElementById('workout-log-form');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
           <WorkoutExplorer
             onSelectTemplate={(tpl) => {
               setWorkoutTitle(tpl.title);
@@ -727,10 +737,12 @@ export const App: React.FC = () => {
               setMuscleGroup(tpl.muscleGroup);
               setEquipmentType(tpl.equipmentType);
               setDurationMin(String(tpl.durationMin));
+              const el = document.getElementById('workout-log-form');
+              el?.scrollIntoView({ behavior: 'smooth' });
             }}
           />
           <div className="grid-main">
-          <form className="card" onSubmit={logWorkout} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <form id="workout-log-form" className="card" onSubmit={logWorkout} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <strong style={{ fontSize: 16 }}>Log Strength / Workout Set</strong>
             <input
               className="input"

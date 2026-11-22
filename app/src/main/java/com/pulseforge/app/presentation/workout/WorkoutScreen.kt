@@ -1,5 +1,21 @@
 package com.pulseforge.app.presentation.workout
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,6 +33,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,14 +77,22 @@ fun WorkoutScreen(
     var sessionNotes by remember { mutableStateOf("") }
     val currentExercises = remember { mutableStateListOf<ExerciseLog>() }
 
-    // Rest Timer state
+    // Rest Timer & Celebration Motion state
     var restSecondsRemaining by remember { mutableIntStateOf(0) }
+    var restTotalSeconds by remember { mutableIntStateOf(60) }
     var isRestTimerRunning by remember { mutableStateOf(false) }
+    var showCelebrationBanner by remember { mutableStateOf(false) }
     LaunchedEffect(isRestTimerRunning, restSecondsRemaining) {
         if (isRestTimerRunning && restSecondsRemaining > 0) {
             delay(1000L)
             restSecondsRemaining -= 1
             if (restSecondsRemaining == 0) isRestTimerRunning = false
+        }
+    }
+    LaunchedEffect(showCelebrationBanner) {
+        if (showCelebrationBanner) {
+            delay(3500L)
+            showCelebrationBanner = false
         }
     }
 
@@ -106,6 +132,17 @@ fun WorkoutScreen(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(if (isLoggingNewSession) "Cancel" else "New Workout")
                 }
+            }
+        }
+
+        if (!isLoggingNewSession) {
+            item {
+                LiftWorkoutInsightsSection(
+                    sessions = uiState.workoutSessions,
+                    userProfile = uiState.userProfile,
+                    multiDayRecordings = uiState.multiDayRecordings,
+                    onStartWorkoutClick = { isLoggingNewSession = true }
+                )
             }
         }
 
@@ -184,80 +221,135 @@ fun WorkoutScreen(
             }
         }
 
-        // Anatomical Human Body Muscle Map + Live Form Animation Card
+        // Workout Logged Celebration Banner (UI/UX Motion)
         item {
-            PulseCard(borderGlow = true) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            AnimatedVisibility(
+                visible = showCelebrationBanner,
+                enter = fadeIn(tween(260)) + expandVertically(spring(stiffness = Spring.StiffnessMediumLow)) + scaleIn(initialScale = 0.92f),
+                exit = fadeOut(tween(220)) + shrinkVertically()
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color(0xFF10B981).copy(alpha = 0.16f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color(0xFF10B981).copy(alpha = 0.45f), RoundedCornerShape(16.dp))
                 ) {
-                    Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                        Text(
-                            text = selectedExercise.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "${selectedExercise.primaryMuscle.label} • ${selectedExercise.equipment.label}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    Button(
-                        onClick = { openDialogForExercise(selectedExercise) },
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Log Set", fontSize = 12.sp)
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF10B981)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Workout Logged & 1RM Updated!",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Tonnage and EPOC burn synced to your weekly load.",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
+            }
+        }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 1. Actual Human Body Muscle Map (Front & Back)
-                HumanMuscleBodyView(
-                    primaryMuscle = selectedExercise.primaryMuscle,
-                    secondaryMuscles = selectedExercise.secondaryMuscles,
-                    onMuscleSelected = { tappedMuscle ->
-                        selectedMuscleFilter = tappedMuscle
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 2. Live Exercise Animation
-                ExerciseAnimationCanvas(exercise = selectedExercise)
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 3. Form Cues & Default Machine Settings
-                Text(
-                    text = "Setup: ${selectedExercise.defaultSettings}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                selectedExercise.cues.forEachIndexed { i, cue ->
+        // Anatomical Human Body Muscle Map + Live Form Animation Card with smooth transition
+        item {
+            AnimatedContent(
+                targetState = selectedExercise,
+                transitionSpec = {
+                    (fadeIn(tween(260)) + slideInHorizontally { it / 12 }) togetherWith
+                        (fadeOut(tween(180)) + slideOutHorizontally { -it / 12 })
+                },
+                label = "exerciseStudioTransition"
+            ) { activeEx ->
+                PulseCard(borderGlow = true) {
                     Row(
-                        modifier = Modifier.padding(vertical = 2.dp),
-                        verticalAlignment = Alignment.Top
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "${i + 1}.",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.width(18.dp)
-                        )
-                        Text(
-                            text = cue,
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
-                        )
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                            Text(
+                                text = activeEx.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "${activeEx.primaryMuscle.label} • ${activeEx.equipment.label}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        Button(
+                            onClick = { openDialogForExercise(activeEx) },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Log Set", fontSize = 12.sp)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 1. Actual Human Body Muscle Map (Front & Back)
+                    HumanMuscleBodyView(
+                        primaryMuscle = activeEx.primaryMuscle,
+                        secondaryMuscles = activeEx.secondaryMuscles,
+                        onMuscleSelected = { tappedMuscle ->
+                            selectedMuscleFilter = tappedMuscle
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 2. Live 3D-Shaded Exercise Animation
+                    ExerciseAnimationCanvas(exercise = activeEx)
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 3. Form Cues & Default Machine Settings
+                    Text(
+                        text = "Setup: ${activeEx.defaultSettings}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    activeEx.cues.forEachIndexed { i, cue ->
+                        Row(
+                            modifier = Modifier.padding(vertical = 2.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Text(
+                                text = "${i + 1}.",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.width(18.dp)
+                            )
+                            Text(
+                                text = cue,
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+                            )
+                        }
                     }
                 }
             }
@@ -317,23 +409,64 @@ fun WorkoutScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
 
-                        // Rest Timer Pill
+                        // Animated Circular Rest Timer Ring
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             if (restSecondsRemaining > 0) {
+                                val progress by animateFloatAsState(
+                                    targetValue = restSecondsRemaining.toFloat() / restTotalSeconds.coerceAtLeast(1),
+                                    animationSpec = tween(450),
+                                    label = "restRing"
+                                )
                                 Surface(
                                     shape = RoundedCornerShape(50),
-                                    color = extra.calorieRing.copy(alpha = 0.15f),
+                                    color = extra.calorieRing.copy(alpha = 0.14f),
                                     modifier = Modifier.clickable { isRestTimerRunning = !isRestTimerRunning }
                                 ) {
-                                    Text(
-                                        text = "Rest ${restSecondsRemaining}s",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = extra.calorieRing,
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    ) {
+                                        Canvas(modifier = Modifier.size(16.dp)) {
+                                            drawArc(
+                                                color = extra.calorieRing.copy(alpha = 0.25f),
+                                                startAngle = -90f,
+                                                sweepAngle = 360f,
+                                                useCenter = false,
+                                                style = Stroke(width = 3f, cap = StrokeCap.Round)
+                                            )
+                                            drawArc(
+                                                color = extra.calorieRing,
+                                                startAngle = -90f,
+                                                sweepAngle = 360f * progress,
+                                                useCenter = false,
+                                                style = Stroke(width = 3f, cap = StrokeCap.Round)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = "${restSecondsRemaining}s",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = extra.calorieRing
+                                        )
+                                    }
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(50),
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    modifier = Modifier.clickable {
+                                        restSecondsRemaining += 15
+                                        restTotalSeconds = maxOf(restTotalSeconds, restSecondsRemaining)
+                                    }
+                                ) {
+                                    Text(
+                                        text = "+15s",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                     )
                                 }
                             } else {
@@ -342,6 +475,7 @@ fun WorkoutScreen(
                                         shape = RoundedCornerShape(50),
                                         color = MaterialTheme.colorScheme.surfaceVariant,
                                         modifier = Modifier.clickable {
+                                            restTotalSeconds = sec
                                             restSecondsRemaining = sec
                                             isRestTimerRunning = true
                                         }
@@ -447,6 +581,7 @@ fun WorkoutScreen(
                                     isLoggingNewSession = false
                                     isRestTimerRunning = false
                                     restSecondsRemaining = 0
+                                    showCelebrationBanner = true
                                 }
                             },
                             modifier = Modifier.weight(1f),
@@ -459,13 +594,17 @@ fun WorkoutScreen(
             }
         }
 
-        // Weekly Training Load Hero Banner
+        // Weekly Training Load Hero Banner with animated progress counters
         item {
-            val totalTonnage = uiState.workoutSessions.sumOf { it.totalVolumeKg } / 1000.0
-            val totalKcal = uiState.workoutSessions.sumOf { it.kcalBurned }
-            val top1Rm = uiState.workoutSessions
+            val totalTonnage = (uiState.workoutSessions.sumOf { it.totalVolumeKg } / 1000.0).toFloat()
+            val totalKcal = uiState.workoutSessions.sumOf { it.kcalBurned }.toInt()
+            val top1Rm = (uiState.workoutSessions
                 .flatMap { it.exercises }
-                .maxOfOrNull { it.maxEstimated1Rm } ?: 87.0
+                .maxOfOrNull { it.maxEstimated1Rm } ?: 87.0).toInt()
+
+            val animTonnage by animateFloatAsState(totalTonnage, tween(600), label = "animTonnage")
+            val animKcal by animateIntAsState(totalKcal, tween(600), label = "animKcal")
+            val animTop1Rm by animateIntAsState(top1Rm, tween(600), label = "anim1Rm")
 
             PulseCard(borderGlow = true) {
                 Row(
@@ -508,17 +647,17 @@ fun WorkoutScreen(
                 ) {
                     MetricBadge(
                         label = "Tonnage",
-                        value = "${String.format("%.1f", totalTonnage)}t",
+                        value = "${String.format("%.1f", animTonnage)}t",
                         color = MaterialTheme.colorScheme.primary
                     )
                     MetricBadge(
                         label = "Burned",
-                        value = "${totalKcal.toInt()} kcal",
+                        value = "$animKcal kcal",
                         color = extra.calorieRing
                     )
                     MetricBadge(
                         label = "Top 1RM",
-                        value = "${top1Rm.toInt()} kg",
+                        value = "$animTop1Rm kg",
                         color = extra.proteinColor
                     )
                 }
