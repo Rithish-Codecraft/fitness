@@ -1,5 +1,7 @@
 package com.pulseforge.app.presentation.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -345,7 +347,12 @@ fun LiftWorkoutInsightsSection(
                     verticalAlignment = Alignment.Bottom
                 ) {
                     weeklyReps.forEachIndexed { idx, (dayLetter, repCount) ->
-                        val frac = if (repCount > 0) (repCount.toFloat() / maxR).coerceIn(0.15f, 1f) else 0.08f
+                        val targetFrac = if (repCount > 0) (repCount.toFloat() / maxR).coerceIn(0.15f, 1f) else 0.08f
+                        val animFrac by animateFloatAsState(
+                            targetValue = targetFrac,
+                            animationSpec = tween(durationMillis = 500),
+                            label = "bar_$idx"
+                        )
                         Column(
                             modifier = Modifier.weight(1f),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -354,7 +361,7 @@ fun LiftWorkoutInsightsSection(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height((36 * frac).dp)
+                                    .height((36 * animFrac).dp)
                                     .clip(RoundedCornerShape(4.dp))
                                     .background(if (idx == weeklyReps.lastIndex) todayBarColor else barColor)
                             )
@@ -370,7 +377,12 @@ fun LiftWorkoutInsightsSection(
         val diffKg = abs(userProfile.targetWeightKg - userProfile.currentWeightKg)
         val diffText = if (diffKg < 0.2) "Goal reached" else "${String.format("%.1f", diffKg)} kg to go"
         val startGap = 15.0
-        val weightProgress = (1.0 - (diffKg / startGap)).toFloat().coerceIn(0.08f, 1f)
+        val weightProgressTarget = (1.0 - (diffKg / startGap)).toFloat().coerceIn(0.08f, 1f)
+        val weightProgress by animateFloatAsState(
+            targetValue = weightProgressTarget,
+            animationSpec = tween(durationMillis = 600),
+            label = "weight_progress"
+        )
 
         PulseCard {
             Row(

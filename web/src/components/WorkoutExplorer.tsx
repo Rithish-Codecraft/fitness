@@ -136,7 +136,8 @@ export const WorkoutExplorer: React.FC<WorkoutExplorerProps> = ({ onSelectTempla
 
       {/* Exercise Process Hero Card */}
       <div
-        className="card"
+        key={activePlan.id}
+        className="card pf-animate-in"
         style={{
           background: activePlan.accentGradient,
           color: '#ffffff',
@@ -240,7 +241,7 @@ export const WorkoutExplorer: React.FC<WorkoutExplorerProps> = ({ onSelectTempla
               key={item.id}
               type="button"
               onClick={() => onSelectTemplate(item)}
-              className="card"
+              className="card pf-tap-card"
               style={{
                 textAlign: 'left',
                 cursor: 'pointer',

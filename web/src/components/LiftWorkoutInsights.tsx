@@ -136,7 +136,7 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
       {/* 1. Today's Workout Hero Card */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="card pf-animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 12, fontWeight: 700 }} className="muted">Today</span>
           <span
@@ -184,10 +184,10 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
       </div>
 
       {/* 2. 3-Column Stat Pills */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+      <div className="pf-animate-in" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, animationDelay: '60ms' }}>
         <button
           type="button"
-          className="card"
+          className="card pf-tap-card"
           onClick={() => setDetailType('WORKOUTS')}
           style={{
             padding: 12,
@@ -206,7 +206,7 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
 
         <button
           type="button"
-          className="card"
+          className="card pf-tap-card"
           onClick={() => setDetailType('REPS')}
           style={{
             padding: 12,
@@ -225,7 +225,7 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
 
         <button
           type="button"
-          className="card"
+          className="card pf-tap-card"
           onClick={() => setDetailType('VOLUME')}
           style={{
             padding: 12,
@@ -244,7 +244,7 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
       </div>
 
       {/* 3. Last 30 Days Consistency Heatmap */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="card pf-animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 10, animationDelay: '120ms' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <strong style={{ fontSize: 14 }}>Last 30 days</strong>
           <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>
@@ -276,13 +276,14 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
       </div>
 
       {/* 4. Volume Trend & This Week Daily Reps */}
-      <div className="grid-2">
+      <div className="grid-2 pf-animate-in" style={{ animationDelay: '180ms' }}>
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 700 }} className="muted">Volume</span>
           <strong style={{ fontSize: 18 }}>{formatCompact(stats.volume)} kg</strong>
           <svg viewBox="0 0 120 44" style={{ width: '100%', height: 44 }}>
             {volumeSeries.length > 0 && (
               <polyline
+                className="pf-line-draw"
                 fill="none"
                 stroke="var(--accent)"
                 strokeWidth="3"
@@ -309,10 +310,12 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
               return (
                 <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                   <div
+                    className="pf-bar-grow"
                     style={{
                       width: '100%',
                       height: h,
                       borderRadius: 3,
+                      animationDelay: `${idx * 45}ms`,
                       background: idx === weeklyReps.length - 1 ? 'var(--accent)' : 'var(--text-muted)'
                     }}
                   />
@@ -325,7 +328,7 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
       </div>
 
       {/* 5. Body Weight Goal Card */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="card pf-animate-in" style={{ display: 'flex', flexDirection: 'column', gap: 8, animationDelay: '220ms' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 11 }} className="muted">Body weight</div>
@@ -340,21 +343,25 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
         </div>
       </div>
 
-      {/* Interactive Stat Detail Modal */}
+      {/* Interactive Stat Detail Slide-Up Sheet */}
       {detailType && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.68)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 16,
-            zIndex: 60
-          }}
+          className="pf-sheet-backdrop"
+          onClick={() => setDetailType(null)}
         >
-          <div className="card" style={{ maxWidth: 380, width: '100%' }}>
+          <div
+            className="card pf-sheet-panel"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: 38,
+                height: 4,
+                borderRadius: 999,
+                background: 'var(--border)',
+                margin: '0 auto 12px'
+              }}
+            />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <strong style={{ fontSize: 16 }}>
                 {detailType === 'WORKOUTS'
