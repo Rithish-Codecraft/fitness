@@ -25,6 +25,7 @@ export interface UserProfile {
   waterConsumedMl: number;
   activeTheme: ThemePalette;
   isDarkMode: boolean;
+  isOnboarded?: boolean;
 }
 
 export interface FoodItem {
