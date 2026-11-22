@@ -50,6 +50,8 @@ import {
   MUSCLE_GROUPS,
   ProgressAnalyticsTab
 } from './components/ProgressAnalyticsTab';
+import { WorkoutAnimationClip } from './components/WorkoutAnimationClip';
+import { EXERCISE_PRESETS } from './engine/exerciseCatalog';
 import { LegalPage } from './components/LegalPages';
 import {
   AuthAccount,
@@ -744,6 +746,30 @@ export const App: React.FC = () => {
           <div className="grid-main">
           <form id="workout-log-form" className="card" onSubmit={logWorkout} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <strong style={{ fontSize: 16 }}>Log Strength / Workout Set</strong>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {EXERCISE_PRESETS.slice(0, 6).map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className="btn"
+                  style={{ padding: '4px 8px', fontSize: 10 }}
+                  onClick={() => {
+                    setWorkoutTitle(preset.name);
+                    setExerciseName(preset.name);
+                    setMuscleGroup(preset.primaryMuscle);
+                    setEquipmentType(preset.equipment);
+                    setWeightKg(String(preset.defaultWeightKg));
+                    setReps(String(preset.defaultReps));
+                  }}
+                >
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+            <WorkoutAnimationClip
+              exerciseName={exerciseName}
+              muscleGroup={muscleGroup}
+            />
             <input
               className="input"
               placeholder="Session title (e.g. Upper Body Push)"
@@ -820,15 +846,25 @@ export const App: React.FC = () => {
                   0,
                   ...w.exercises.flatMap((ex) => ex.sets.map((s) => s.estimated1RmKg))
                 );
+                const firstEx = w.exercises[0];
                 return (
-                  <div key={w.id} className="sensor-tile">
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <strong style={{ fontSize: 13 }}>{w.title}</strong>
-                      <span style={{ fontSize: 11 }} className="muted">{w.date}</span>
+                  <div key={w.id} className="sensor-tile" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <strong style={{ fontSize: 13 }}>{w.title}</strong>
+                        <span style={{ fontSize: 11 }} className="muted">{w.date}</span>
+                      </div>
+                      <div style={{ fontSize: 11, marginTop: 4 }} className="muted">
+                        {w.durationMinutes} min • Volume: {vol} kg • Est 1RM: {best1Rm || '-'} kg
+                      </div>
                     </div>
-                    <div style={{ fontSize: 11, marginTop: 4 }} className="muted">
-                      {w.durationMinutes} min • Volume: {vol} kg • Est 1RM: {best1Rm || '-'} kg
-                    </div>
+                    {firstEx && (
+                      <WorkoutAnimationClip
+                        exerciseName={firstEx.exerciseName}
+                        muscleGroup={firstEx.muscleGroup}
+                        compact
+                      />
+                    )}
                   </div>
                 );
               })
