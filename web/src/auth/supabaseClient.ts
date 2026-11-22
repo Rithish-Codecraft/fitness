@@ -118,8 +118,3 @@ export async function saveCloudUserState(
   );
   if (syncErr) console.warn('Cloud sync_state warning:', syncErr.message);
 }
-    telemetry_json: telemetry,
-    lifestyle_json: bundle.lifestyle,
-    updated_at: new Date().toISOString()
-  });
-}
