@@ -45,6 +45,7 @@ import { AuthScreen } from './components/AuthScreen';
 import { PersonalWizard } from './components/PersonalWizard';
 import { WorkoutExplorer } from './components/WorkoutExplorer';
 import { LiftWorkoutInsights } from './components/LiftWorkoutInsights';
+import { ExerciseDbExplorer } from './components/ExerciseDbExplorer';
 import {
   EQUIPMENT_TYPES,
   MUSCLE_GROUPS,
@@ -739,6 +740,15 @@ export const App: React.FC = () => {
               setMuscleGroup(tpl.muscleGroup);
               setEquipmentType(tpl.equipmentType);
               setDurationMin(String(tpl.durationMin));
+              const el = document.getElementById('workout-log-form');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
+          <ExerciseDbExplorer
+            onSelectExercise={(ex) => {
+              setExerciseName(ex.name);
+              setMuscleGroup(ex.muscleGroup);
+              setEquipmentType(ex.equipmentType);
               const el = document.getElementById('workout-log-form');
               el?.scrollIntoView({ behavior: 'smooth' });
             }}
