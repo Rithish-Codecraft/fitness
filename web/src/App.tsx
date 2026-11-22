@@ -155,26 +155,42 @@ export const App: React.FC = () => {
 
   // Listen for Supabase Auth (Google OAuth & Email/Password) sessions
   useEffect(() => {
+    let activeAppliedUid: string | null = null;
+
     const applySupabaseSession = async (user: SupabaseUser | null) => {
       setSupabaseUser(user);
-      if (!user) return;
+      if (!user) {
+        activeAppliedUid = null;
+        return;
+      }
+      if (activeAppliedUid === user.id) return;
+      activeAppliedUid = user.id;
+
       const cloud = await loadCloudUserState(user);
       if (cloud.telemetry) {
         importTelemetrySnapshot(cloud.telemetry);
       }
       const displayName =
+        (cloud.bundle?.profile?.name && cloud.bundle.profile.name.trim()) ||
         (user.user_metadata?.full_name as string | undefined) ||
         (user.user_metadata?.name as string | undefined) ||
         user.email?.split('@')[0] ||
         'Athlete';
+      const cloudId = cloud.pulseforgeId || derivePulseForgeId(user.id);
       const cloudAccount: AuthAccount = {
-        userId: cloud.pulseforgeId || derivePulseForgeId(user.id),
+        userId: cloudId,
         fullName: displayName,
         email: user.email || '',
         passwordHash: '',
         createdAt: user.created_at.slice(0, 16).replace('T', ' ')
       };
-      handleAuthenticated(cloudAccount, cloud.isNewCloudProfile, cloud.bundle ?? undefined);
+
+      // Check if this user already completed onboarding locally
+      const localWizardFlag = localStorage.getItem(`pulseforge_needs_wizard_${cloudId}`);
+      const alreadyOnboardedLocally = localWizardFlag === 'false';
+      const shouldShowWizard = cloud.isNewCloudProfile && !alreadyOnboardedLocally;
+
+      handleAuthenticated(cloudAccount, shouldShowWizard, cloud.bundle ?? undefined);
     };
 
     supabase.auth.getSession().then(({ data }) => {
@@ -183,7 +199,11 @@ export const App: React.FC = () => {
       }
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        activeAppliedUid = null;
+        return;
+      }
       if (session?.user) {
         applySupabaseSession(session.user);
       }
@@ -300,9 +320,26 @@ export const App: React.FC = () => {
         account={account}
         initialProfile={profile}
         onComplete={(completedProfile) => {
-          setProfile(completedProfile);
+          const finalizedProfile: UserProfile = {
+            ...completedProfile,
+            id: account.userId,
+            isOnboarded: true
+          };
+          setProfile(finalizedProfile);
           completePersonalWizard(account.userId);
           setNeedsWizard(false);
+
+          const nextBundle: UserDataBundle = {
+            profile: finalizedProfile,
+            foods,
+            workouts,
+            lifestyle,
+            lastSync: new Date().toLocaleTimeString()
+          };
+          saveUserData(account.userId, nextBundle);
+          if (supabaseUser) {
+            saveCloudUserState(supabaseUser, account.userId, nextBundle, telemetry).catch(() => {});
+          }
         }}
       />
     );

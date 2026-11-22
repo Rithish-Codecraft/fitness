@@ -54,7 +54,7 @@ export async function loadCloudUserState(user: User): Promise<{
     .eq('id', user.id)
     .maybeSingle();
 
-  if (!profRow) {
+  if (!profRow || !profRow.profile_json) {
     return {
       pulseforgeId: fallbackId,
       bundle: null,
@@ -63,10 +63,17 @@ export async function loadCloudUserState(user: User): Promise<{
     };
   }
 
+  const profileJson = profRow.profile_json as UserDataBundle['profile'];
+  const hasBaseline = Boolean(
+    profileJson &&
+      (profileJson.isOnboarded === true ||
+        (profileJson.age > 0 && profileJson.heightCm > 0 && profileJson.currentWeightKg > 0))
+  );
+
   return {
     pulseforgeId: profRow.pulseforge_id || fallbackId,
     bundle: {
-      profile: profRow.profile_json,
+      profile: { ...profileJson, isOnboarded: hasBaseline },
       foods: Array.isArray(syncRow?.foods_json) ? syncRow.foods_json : undefined,
       workouts: Array.isArray(syncRow?.workouts_json) ? syncRow.workouts_json : undefined,
       lifestyle: syncRow?.lifestyle_json || undefined,
@@ -75,7 +82,7 @@ export async function loadCloudUserState(user: User): Promise<{
         : 'Cloud Synced'
     },
     telemetry: syncRow?.telemetry_json || null,
-    isNewCloudProfile: false
+    isNewCloudProfile: !hasBaseline
   };
 }
 
@@ -85,19 +92,32 @@ export async function saveCloudUserState(
   bundle: UserDataBundle,
   telemetry: PhoneSensorTelemetry
 ): Promise<void> {
-  await supabase.from('user_profiles').upsert({
-    id: user.id,
-    pulseforge_id: pulseforgeId,
-    full_name: bundle.profile.name,
-    email: user.email || '',
-    profile_json: bundle.profile,
-    updated_at: new Date().toISOString()
-  });
+  const { error: profErr } = await supabase.from('user_profiles').upsert(
+    {
+      id: user.id,
+      pulseforge_id: pulseforgeId,
+      full_name: bundle.profile.name,
+      email: user.email || '',
+      profile_json: bundle.profile,
+      updated_at: new Date().toISOString()
+    },
+    { onConflict: 'id' }
+  );
+  if (profErr) console.warn('Cloud profile sync warning:', profErr.message);
 
-  await supabase.from('user_sync_state').upsert({
-    id: user.id,
-    foods_json: bundle.foods,
-    workouts_json: bundle.workouts,
+  const { error: syncErr } = await supabase.from('user_sync_state').upsert(
+    {
+      id: user.id,
+      foods_json: bundle.foods,
+      workouts_json: bundle.workouts,
+      telemetry_json: telemetry,
+      lifestyle_json: bundle.lifestyle,
+      updated_at: new Date().toISOString()
+    },
+    { onConflict: 'id' }
+  );
+  if (syncErr) console.warn('Cloud sync_state warning:', syncErr.message);
+}
     telemetry_json: telemetry,
     lifestyle_json: bundle.lifestyle,
     updated_at: new Date().toISOString()
