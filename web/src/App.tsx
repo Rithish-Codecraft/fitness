@@ -51,7 +51,8 @@ import {
   MUSCLE_GROUPS,
   ProgressAnalyticsTab
 } from './components/ProgressAnalyticsTab';
-import { WorkoutAnimationClip } from './components/WorkoutAnimationClip';
+import { BiomechanicalPlayer } from './components/BiomechanicalPlayer';
+import { preloadPresetMediaAssets } from './data/exerciseMediaRegistry';
 import { EXERCISE_PRESETS } from './engine/exerciseCatalog';
 import { LegalPage } from './components/LegalPages';
 import {
@@ -221,6 +222,13 @@ export const App: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', profile.activeTheme);
   }, [profile.activeTheme]);
+
+  // Preload preset workout media assets in background when entering Workout tab
+  useEffect(() => {
+    if (tab === 'workout') {
+      preloadPresetMediaAssets().catch(() => {});
+    }
+  }, [tab]);
 
   // Persist strictly isolated per-user data locally + to Supabase Cloud when signed in
   useEffect(() => {
@@ -776,7 +784,7 @@ export const App: React.FC = () => {
                 </button>
               ))}
             </div>
-            <WorkoutAnimationClip
+            <BiomechanicalPlayer
               exerciseName={exerciseName}
               muscleGroup={muscleGroup}
             />
@@ -869,7 +877,7 @@ export const App: React.FC = () => {
                       </div>
                     </div>
                     {firstEx && (
-                      <WorkoutAnimationClip
+                      <BiomechanicalPlayer
                         exerciseName={firstEx.exerciseName}
                         muscleGroup={firstEx.muscleGroup}
                         compact
