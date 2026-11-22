@@ -69,7 +69,7 @@ export const LiftWorkoutInsights: React.FC<LiftWorkoutInsightsProps> = ({
     const set = new Set<string>();
     sessions.forEach((s) => set.add(s.date));
     dailyRecordings.forEach((r) => {
-      if (r.workoutCount > 0 || r.steps > 1000) set.add(r.date);
+      if (r.steps > 1000) set.add(r.date);
     });
     return set;
   }, [sessions, dailyRecordings]);
